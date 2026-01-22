@@ -21,9 +21,14 @@ import (
 // @BasePath /
 func main() {
 	databasePath := "data.db"
-	database, err := db.NewSQLiteDB(databasePath)
+	database, err := db.Open(databasePath)
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
+		return
+	}
+
+	if err := db.Migrate(database);  err != nil {
+		log.Fatal("Database migration failed:", err)
 		return
 	}
 
