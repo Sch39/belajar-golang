@@ -1,0 +1,226 @@
+basePath: /
+definitions:
+  api.FailResponse:
+    properties:
+      errors:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        example: There were validation errors
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  api.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  product.productResponse:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Kopi Susu Gula Aren
+        type: string
+      price:
+        example: 15000
+        type: integer
+      stock:
+        example: 10
+        type: integer
+    type: object
+  product.upsertRequest:
+    properties:
+      name:
+        example: Kopi Susu Gula Aren
+        type: string
+      price:
+        example: 15000
+        minimum: 0
+        type: integer
+      stock:
+        example: 10
+        minimum: 0
+        type: integer
+    required:
+    - name
+    - price
+    - stock
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Ini adalah server API untuk aplikasi My Kasir Guweh.
+  title: My Kasir API Guweh
+  version: "1.0"
+paths:
+  /api/products:
+    get:
+      description: Retrieve a list of all products
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/product.productResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.FailResponse'
+      summary: Get all products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Save a new product to database
+      parameters:
+      - description: Product Request Body
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/product.upsertRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/product.productResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.FailResponse'
+            - properties:
+                errors:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+      summary: Create a new product
+      tags:
+      - products
+  /api/products/{id}:
+    delete:
+      description: Remove a product from the database by its ID
+      parameters:
+      - description: Product ID
+        example: 550e8400-e29b-41d4-a716-446655440000
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success deleted
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "404":
+          description: Product Not Found
+          schema:
+            $ref: '#/definitions/api.FailResponse'
+      summary: Delete a product
+      tags:
+      - products
+    get:
+      description: Get detailed information about a specific product
+      parameters:
+      - description: Product ID
+        example: 550e8400-e29b-41d4-a716-446655440000
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/product.productResponse'
+              type: object
+        "404":
+          description: Product Not Found
+          schema:
+            $ref: '#/definitions/api.FailResponse'
+      summary: Get a product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update product details by its ID
+      parameters:
+      - description: Product ID
+        example: 550e8400-e29b-41d4-a716-446655440000
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated Product Data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/product.upsertRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/product.productResponse'
+              type: object
+        "400":
+          description: Validation Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.FailResponse'
+            - properties:
+                errors:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "404":
+          description: Product Not Found
+          schema:
+            $ref: '#/definitions/api.FailResponse'
+      summary: Update an existing product
+      tags:
+      - products
+swagger: "2.0"

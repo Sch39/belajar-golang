@@ -2,13 +2,23 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	"sch.dev/my-kasir-gw/internal/product"
 	db "sch.dev/my-kasir-gw/internal/storage/sqlite"
+
+	_ "sch.dev/my-kasir-gw/docs"
 )
 
+// @title My Kasir API Guweh
+// @version 1.0
+// @description Ini adalah server API untuk aplikasi My Kasir Guweh.
+// @host localhost:8080
+// @BasePath /
 func main() {
 	databasePath := "data.db"
 	database, err := db.NewSQLiteDB(databasePath)
@@ -27,6 +37,15 @@ func main() {
 
 	 mux.Handle("/", http.FileServer(http.Dir("./public")))
 	 
+	 mux.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"message": "API Running",
+		})
+	 }))
+
+	 mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	 server := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,

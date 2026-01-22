@@ -15,7 +15,7 @@ endif
 all: build
 
 ## build: Melakukan build FE dan BE secara berurutan
-build: build-fe build-be
+build: build-fe build-be build-swagger
 
 ## build-fe: Build frontend
 build-fe:
@@ -26,6 +26,10 @@ build-fe:
 build-be:
 	@echo "Building Backend..."
 	go build -o $(BINARY_FINAL) $(GO_MAIN)
+
+build-swagger:
+	@echo "Generating Swagger Documentation..."
+	swag init -g $(GO_MAIN) --output ./docs
 
 ## clean: Membersihkan hasil build
 clean:

@@ -13,7 +13,7 @@ GET http://localhost:8080/api/products
 Accept: application/json
 
 ###
-@PRODUCT_ID = 04108da0-049d-4469-be90-7096c536b893
+@PRODUCT_ID = 1c8cdc96-4999-43f5-bcb3-a93ba9c38337
 
 ###
 GET http://localhost:8080/api/products/{{PRODUCT_ID}}
