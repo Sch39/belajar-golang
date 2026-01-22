@@ -38,13 +38,27 @@ func (s *service) GetAll(ctx context.Context) ([]Product, error) {
 }
 
 func (s *service) GetByID(ctx context.Context, id string) (*Product, error) {
-	return s.repo.FindByID(ctx, id)
+	product, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if product == nil {
+		return nil, ErrNotFound
+	}
+
+	return product, nil
 }
 
 func (s *service) Update(ctx context.Context, product *Product) error {
+	if _, err := s.GetByID(ctx, product.ID); err != nil {
+		return err
+	}
 	return s.repo.Update(ctx, product)
 }
 
 func (s *service) Delete(ctx context.Context, id string) error {
+	if _, err := s.GetByID(ctx, id); err != nil {
+		return err
+	}
 	return s.repo.Delete(ctx, id)
 }

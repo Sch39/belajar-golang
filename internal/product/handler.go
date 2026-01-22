@@ -61,7 +61,12 @@ func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 	product, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
-		api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		switch err { 
+		case ErrNotFound:
+			api.JSON(w, http.StatusNotFound, api.Fail("Product not found", nil))
+		default:
+			api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		}
 		return
 	}
 	api.JSON(w, http.StatusOK, api.Success(toResponse(product)))
@@ -84,7 +89,12 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 		Stock: *req.Stock,
 	}
 	if err := h.service.Update(r.Context(), product); err != nil {
-		api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		switch err {
+		case ErrNotFound:
+			api.JSON(w, http.StatusNotFound, api.Fail("Product not found", nil))
+		default:
+			api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		}
 		return
 	}
 	api.JSON(w, http.StatusOK, api.Success(toResponse(product)))
@@ -92,7 +102,12 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if err := h.service.Delete(r.Context(), id); err != nil {
-		api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		switch err {
+		case ErrNotFound:
+			api.JSON(w, http.StatusNotFound, api.Fail("Product not found", nil))
+		default:
+			api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		}
 		return
 	}
 	api.JSON(w, http.StatusOK, api.Success(nil))
