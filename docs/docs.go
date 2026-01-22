@@ -31,7 +31,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.SuccessResponse"
+                                    "$ref": "#/definitions/rest.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -50,7 +50,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.FailResponse"
+                            "$ref": "#/definitions/rest.FailResponse"
                         }
                     }
                 }
@@ -84,7 +84,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.SuccessResponse"
+                                    "$ref": "#/definitions/rest.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -102,7 +102,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.FailResponse"
+                                    "$ref": "#/definitions/rest.FailResponse"
                                 },
                                 {
                                     "type": "object",
@@ -147,7 +147,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.SuccessResponse"
+                                    "$ref": "#/definitions/rest.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -163,7 +163,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api.FailResponse"
+                            "$ref": "#/definitions/rest.FailResponse"
                         }
                     }
                 }
@@ -205,7 +205,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.SuccessResponse"
+                                    "$ref": "#/definitions/rest.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -223,7 +223,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.FailResponse"
+                                    "$ref": "#/definitions/rest.FailResponse"
                                 },
                                 {
                                     "type": "object",
@@ -242,7 +242,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api.FailResponse"
+                            "$ref": "#/definitions/rest.FailResponse"
                         }
                     }
                 }
@@ -270,13 +270,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Success deleted",
                         "schema": {
-                            "$ref": "#/definitions/api.SuccessResponse"
+                            "$ref": "#/definitions/rest.SuccessResponse"
                         }
                     },
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api.FailResponse"
+                            "$ref": "#/definitions/rest.FailResponse"
                         }
                     }
                 }
@@ -284,39 +284,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api.FailResponse": {
-            "type": "object",
-            "properties": {
-                "errors": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "message": {
-                    "type": "string",
-                    "example": "There were validation errors"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": false
-                }
-            }
-        },
-        "api.SuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "message": {
-                    "type": "string",
-                    "example": "Operation completed successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
         "product.productResponse": {
             "type": "object",
             "properties": {
@@ -359,6 +326,39 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0,
                     "example": 10
+                }
+            }
+        },
+        "rest.FailResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "There were validation errors"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "rest.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         }

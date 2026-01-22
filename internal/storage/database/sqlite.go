@@ -1,5 +1,5 @@
-// internal/storage/sqlite/migrate.go
-package sqlite
+// internal/storage/database/sqlite.go
+package database
 
 import (
 	"database/sql"
@@ -9,13 +9,29 @@ import (
 	"path"
 	"sort"
 	"strings"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
-//go:embed migrations/*.sql
+func NewSqliteConn(path string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", path)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
+	log.Println("SQLite database initialized successfully")
+	return db, nil
+}
+
+//go:embed migrations/sqlite/*.sql
 var migrationFiles embed.FS
 
-func Migrate(db *sql.DB) error {
-	const migrationPath = "migrations"
+func MigrateSqlite(db *sql.DB) error {
+	const migrationPath = "migrations/sqlite"
 	const migrationTable = "migrations"
 
 	createMigrationTableQuery := fmt.Sprintf(`
@@ -75,7 +91,7 @@ func Migrate(db *sql.DB) error {
 		if err != nil {
 			return err
 		}
-tx, err := db.Begin()
+		tx, err := db.Begin()
 		if err != nil {
 			return err
 		}

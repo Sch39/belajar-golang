@@ -1,5 +1,5 @@
-// internal\http\api\response.go
-package api
+// internal\pkg\rest\response.go
+package rest
 
 import (
 	"encoding/json"
@@ -8,13 +8,13 @@ import (
 
 type SuccessResponse struct {
 	Success bool        `json:"success" example:"true"`
-	Message string            `json:"message,omitempty" example:"Operation completed successfully"`
+	Message string      `json:"message,omitempty" example:"Operation completed successfully"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
 type FailResponse struct {
-	Success bool              `json:"success" example:"false"`
-	Message string            `json:"message,omitempty" example:"There were validation errors"`
+	Success bool               `json:"success" example:"false"`
+	Message string             `json:"message,omitempty" example:"There were validation errors"`
 	Errors  *map[string]string `json:"errors,omitempty"`
 }
 
@@ -25,7 +25,7 @@ func JSON(w http.ResponseWriter, status int, resp interface{}) {
 }
 
 func Success(data interface{}) SuccessResponse {
-	return SuccessResponse{Success: true, Data: data}
+	return SuccessResponse{Success: true, Data: data, Message: "Operation completed successfully"}
 }
 
 func Fail(message string, errors map[string]string) FailResponse {

@@ -1,5 +1,5 @@
-// internal/http/api/validation.go
-package api
+// internal/pkg/rest/validation.go
+package rest
 
 import (
 	"fmt"

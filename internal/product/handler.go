@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"sch.dev/my-kasir-gw/internal/http/api"
-	"sch.dev/my-kasir-gw/internal/validator"
+	"sch.dev/my-kasir-gw/internal/domain"
+	"sch.dev/my-kasir-gw/internal/pkg/rest"
+	"sch.dev/my-kasir-gw/internal/pkg/validator"
 )
 
 type Handler struct {
@@ -26,33 +27,33 @@ func NewHandler(s Service) *Handler {
 // @Accept       json
 // @Produce      json
 // @Param        product  body      upsertRequest  true  "Product Request Body"
-// @Success      201      {object}  api.SuccessResponse{data=productResponse}
-// @Failure      400      {object}  api.FailResponse{errors=map[string]string}
+// @Success      201      {object}  rest.SuccessResponse{data=productResponse}
+// @Failure      400      {object}  rest.FailResponse{errors=map[string]string}
 // @Router       /api/products [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req upsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		api.JSON(w, http.StatusBadRequest, api.Fail("Invalid body", nil))
+		rest.JSON(w, http.StatusBadRequest, rest.Fail("Invalid body", nil))
 		return
 	}
 
-	if err:= validator.Instance().Struct(req); err != nil {
-		api.JSON(w, http.StatusBadRequest, api.Fail("Validation error", api.ValidationError(err)))
+	if err := validator.Instance().Struct(req); err != nil {
+		rest.JSON(w, http.StatusBadRequest, rest.Fail("Validation error", rest.ValidationError(err)))
 		return
 	}
 
-	product := &Product{
+	product := &domain.Product{
 		Name:  req.Name,
 		Price: *req.Price,
 		Stock: *req.Stock,
 	}
 
 	if err := h.service.Add(r.Context(), product); err != nil {
-		api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
 		return
 	}
 
-	api.JSON(w, http.StatusCreated, api.Success(toResponse(product)))
+	rest.JSON(w, http.StatusCreated, rest.Success(toResponse(product)))
 }
 
 // GetAll godoc
@@ -60,20 +61,20 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Description  Retrieve a list of all products
 // @Tags         products
 // @Produce      json
-// @Success      200      {object}  api.SuccessResponse{data=[]productResponse}
-// @Failure      500      {object}  api.FailResponse
+// @Success      200      {object}  rest.SuccessResponse{data=[]productResponse}
+// @Failure      500      {object}  rest.FailResponse
 // @Router       /api/products [get]
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.service.GetAll(r.Context())
 	if err != nil {
-		api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+		rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
 		return
 	}
-	var resp []productResponse
+	resp := []productResponse{}
 	for _, p := range products {
 		resp = append(resp, toResponse(&p))
 	}
-	api.JSON(w, http.StatusOK, api.Success(resp))
+	rest.JSON(w, http.StatusOK, rest.Success(resp))
 }
 
 // GetByID godoc
@@ -82,21 +83,21 @@ func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Tags         products
 // @Produce      json
 // @Param        id   path      string  true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
-// @Success      200  {object}  api.SuccessResponse{data=productResponse}
-// @Failure      404  {object}  api.FailResponse "Product Not Found"
+// @Success      200  {object}  rest.SuccessResponse{data=productResponse}
+// @Failure      404  {object}  rest.FailResponse "Product Not Found"
 // @Router       /api/products/{id} [get]
 func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 	product, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
-		switch err { 
+		switch err {
 		case ErrNotFound:
-			api.JSON(w, http.StatusNotFound, api.Fail("Product not found", nil))
+			rest.JSON(w, http.StatusNotFound, rest.Fail("Product not found", nil))
 		default:
-			api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+			rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
 		}
 		return
 	}
-	api.JSON(w, http.StatusOK, api.Success(toResponse(product)))
+	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product)))
 }
 
 // Update godoc
@@ -107,21 +108,21 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 // @Produce      json
 // @Param        id       path      string         true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
 // @Param        product  body      upsertRequest  true  "Updated Product Data"
-// @Success      200      {object}  api.SuccessResponse{data=productResponse}
-// @Failure      400      {object}  api.FailResponse{errors=map[string]string} "Validation Error"
-// @Failure      404      {object}  api.FailResponse "Product Not Found"
+// @Success      200      {object}  rest.SuccessResponse{data=productResponse}
+// @Failure      400      {object}  rest.FailResponse{errors=map[string]string} "Validation Error"
+// @Failure      404      {object}  rest.FailResponse "Product Not Found"
 // @Router       /api/products/{id} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 	var req upsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		api.JSON(w, http.StatusBadRequest, api.Fail("Invalid body", nil))
+		rest.JSON(w, http.StatusBadRequest, rest.Fail("Invalid body", nil))
 		return
 	}
-	if err:= validator.Instance().Struct(req); err != nil {
-		api.JSON(w, http.StatusBadRequest, api.Fail("Validation error", api.ValidationError(err)))
+	if err := validator.Instance().Struct(req); err != nil {
+		rest.JSON(w, http.StatusBadRequest, rest.Fail("Validation error", rest.ValidationError(err)))
 		return
 	}
-	product := &Product{
+	product := &domain.Product{
 		ID:    id,
 		Name:  req.Name,
 		Price: *req.Price,
@@ -130,13 +131,13 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 	if err := h.service.Update(r.Context(), product); err != nil {
 		switch err {
 		case ErrNotFound:
-			api.JSON(w, http.StatusNotFound, api.Fail("Product not found", nil))
+			rest.JSON(w, http.StatusNotFound, rest.Fail("Product not found", nil))
 		default:
-			api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+			rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
 		}
 		return
 	}
-	api.JSON(w, http.StatusOK, api.Success(toResponse(product)))
+	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product)))
 }
 
 // Delete godoc
@@ -145,24 +146,23 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 // @Tags         products
 // @Produce      json
 // @Param        id   path      string  true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
-// @Success      200  {object}  api.SuccessResponse "Success deleted"
-// @Failure      404  {object}  api.FailResponse "Product Not Found"
+// @Success      200  {object}  rest.SuccessResponse "Success deleted"
+// @Failure      404  {object}  rest.FailResponse "Product Not Found"
 // @Router       /api/products/{id} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if err := h.service.Delete(r.Context(), id); err != nil {
 		switch err {
 		case ErrNotFound:
-			api.JSON(w, http.StatusNotFound, api.Fail("Product not found", nil))
+			rest.JSON(w, http.StatusNotFound, rest.Fail("Product not found", nil))
 		default:
-			api.JSON(w, http.StatusInternalServerError, api.Fail(err.Error(), nil))
+			rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
 		}
 		return
 	}
-	api.JSON(w, http.StatusOK, api.Success(nil))
+	rest.JSON(w, http.StatusOK, rest.Success(nil))
 }
 
-
-func toResponse(p *Product) productResponse {
+func toResponse(p *domain.Product) productResponse {
 	return productResponse{
 		ID:    p.ID,
 		Name:  p.Name,

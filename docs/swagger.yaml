@@ -1,28 +1,5 @@
 basePath: /
 definitions:
-  api.FailResponse:
-    properties:
-      errors:
-        additionalProperties:
-          type: string
-        type: object
-      message:
-        example: There were validation errors
-        type: string
-      success:
-        example: false
-        type: boolean
-    type: object
-  api.SuccessResponse:
-    properties:
-      data: {}
-      message:
-        example: Operation completed successfully
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
   product.productResponse:
     properties:
       id:
@@ -56,6 +33,29 @@ definitions:
     - price
     - stock
     type: object
+  rest.FailResponse:
+    properties:
+      errors:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        example: There were validation errors
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  rest.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -73,7 +73,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.SuccessResponse'
+            - $ref: '#/definitions/rest.SuccessResponse'
             - properties:
                 data:
                   items:
@@ -83,7 +83,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.FailResponse'
+            $ref: '#/definitions/rest.FailResponse'
       summary: Get all products
       tags:
       - products
@@ -105,7 +105,7 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/api.SuccessResponse'
+            - $ref: '#/definitions/rest.SuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/product.productResponse'
@@ -114,7 +114,7 @@ paths:
           description: Bad Request
           schema:
             allOf:
-            - $ref: '#/definitions/api.FailResponse'
+            - $ref: '#/definitions/rest.FailResponse'
             - properties:
                 errors:
                   additionalProperties:
@@ -140,11 +140,11 @@ paths:
         "200":
           description: Success deleted
           schema:
-            $ref: '#/definitions/api.SuccessResponse'
+            $ref: '#/definitions/rest.SuccessResponse'
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/api.FailResponse'
+            $ref: '#/definitions/rest.FailResponse'
       summary: Delete a product
       tags:
       - products
@@ -164,7 +164,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.SuccessResponse'
+            - $ref: '#/definitions/rest.SuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/product.productResponse'
@@ -172,7 +172,7 @@ paths:
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/api.FailResponse'
+            $ref: '#/definitions/rest.FailResponse'
       summary: Get a product by ID
       tags:
       - products
@@ -200,7 +200,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.SuccessResponse'
+            - $ref: '#/definitions/rest.SuccessResponse'
             - properties:
                 data:
                   $ref: '#/definitions/product.productResponse'
@@ -209,7 +209,7 @@ paths:
           description: Validation Error
           schema:
             allOf:
-            - $ref: '#/definitions/api.FailResponse'
+            - $ref: '#/definitions/rest.FailResponse'
             - properties:
                 errors:
                   additionalProperties:
@@ -219,7 +219,7 @@ paths:
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/api.FailResponse'
+            $ref: '#/definitions/rest.FailResponse'
       summary: Update an existing product
       tags:
       - products
