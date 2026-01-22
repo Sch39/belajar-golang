@@ -1,0 +1,35 @@
+POST http://localhost:8080/api/products
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "Sample Product",
+    "price": 100,
+    "stock": 0
+}
+
+###
+GET http://localhost:8080/api/products
+Accept: application/json
+
+###
+@PRODUCT_ID = 04108da0-049d-4469-be90-7096c536b893
+
+###
+GET http://localhost:8080/api/products/{{PRODUCT_ID}}
+Accept: application/json
+
+###
+PUT http://localhost:8080/api/products/{{PRODUCT_ID}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "Updated Product",
+    "price": 150,
+    "stock": 10
+}
+
+###
+DELETE http://localhost:8080/api/products/{{PRODUCT_ID}}
+Accept: application/json
