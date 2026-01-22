@@ -3,15 +3,16 @@ package sqlite
 
 import (
 	"database/sql"
+	"embed"
 	"fmt"
 	"log"
 	"path"
 	"sort"
 	"strings"
-
-	"sch.dev/my-kasir-gw/internal/storage"
 )
 
+//go:embed migrations/*.sql
+var migrationFiles embed.FS
 
 func Migrate(db *sql.DB) error {
 	const migrationPath = "migrations"
@@ -44,7 +45,7 @@ func Migrate(db *sql.DB) error {
 		appliedMap[filename] = true
 	}
 
-	entries, err := storage.MigrationFiles.ReadDir(migrationPath)
+	entries, err := migrationFiles.ReadDir(migrationPath)
 	if err != nil {
 		return err
 	}
@@ -70,7 +71,7 @@ func Migrate(db *sql.DB) error {
 	for _, name := range pendingFiles {
 		fullPath := path.Join(migrationPath, name)
 
-		sqlBytes, err := storage.MigrationFiles.ReadFile(fullPath)
+		sqlBytes, err := migrationFiles.ReadFile(fullPath)
 		if err != nil {
 			return err
 		}
