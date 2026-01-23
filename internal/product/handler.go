@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"sch.dev/my-kasir-gw/internal/domain"
+	"sch.dev/my-kasir-gw/internal/pkg/apperror"
 	"sch.dev/my-kasir-gw/internal/pkg/rest"
 	"sch.dev/my-kasir-gw/internal/pkg/validator"
 )
@@ -35,12 +36,14 @@ func NewHandler(s Service) *Handler {
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req upsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		rest.JSON(w, http.StatusBadRequest, rest.Fail("Invalid body", nil))
+		code := apperror.ErrInvalidPayload
+		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Invalid body", nil))
 		return
 	}
 
 	if err := validator.Instance().Struct(req); err != nil {
-		rest.JSON(w, http.StatusUnprocessableEntity, rest.Fail("Validation error", rest.ValidationError(err)))
+		code := apperror.ErrValidation
+		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Validation error", rest.ValidationError(err)))
 		return
 	}
 
@@ -51,7 +54,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Add(r.Context(), product); err != nil {
-		rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
+		code := apperror.ErrInternal
+		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		return
 	}
 
@@ -69,7 +73,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.service.GetAll(r.Context())
 	if err != nil {
-		rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
+		code := apperror.ErrInternal
+		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		return
 	}
 	resp := []productResponse{}
@@ -93,9 +98,11 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 	if err != nil {
 		switch err {
 		case ErrNotFound:
-			rest.JSON(w, http.StatusNotFound, rest.Fail("Product not found", nil))
+			code := apperror.ErrProductNotFound
+			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Product not found", nil))
 		default:
-			rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
+			code := apperror.ErrInternal
+			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		}
 		return
 	}
@@ -117,11 +124,13 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 	var req upsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		rest.JSON(w, http.StatusBadRequest, rest.Fail("Invalid body", nil))
+		code := apperror.ErrInvalidPayload
+		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Invalid body", nil))
 		return
 	}
 	if err := validator.Instance().Struct(req); err != nil {
-		rest.JSON(w, http.StatusBadRequest, rest.Fail("Validation error", rest.ValidationError(err)))
+		code := apperror.ErrValidation
+		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Validation error", rest.ValidationError(err)))
 		return
 	}
 	product := &domain.Product{
@@ -133,9 +142,11 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 	if err := h.service.Update(r.Context(), product); err != nil {
 		switch err {
 		case ErrNotFound:
-			rest.JSON(w, http.StatusNotFound, rest.Fail("Product not found", nil))
+			code := apperror.ErrProductNotFound
+			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Product not found", nil))
 		default:
-			rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
+			code := apperror.ErrInternal
+			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		}
 		return
 	}
@@ -155,9 +166,11 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if err := h.service.Delete(r.Context(), id); err != nil {
 		switch err {
 		case ErrNotFound:
-			rest.JSON(w, http.StatusNotFound, rest.Fail("Product not found", nil))
+			code := apperror.ErrProductNotFound
+			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Product not found", nil))
 		default:
-			rest.JSON(w, http.StatusInternalServerError, rest.Fail(err.Error(), nil))
+			code := apperror.ErrInternal
+			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		}
 		return
 	}

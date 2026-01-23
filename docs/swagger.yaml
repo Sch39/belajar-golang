@@ -2,6 +2,9 @@ basePath: /
 definitions:
   internal_product.InternalServerErrorResponse:
     properties:
+      error_code:
+        example: INTERNAL_ERROR
+        type: string
       message:
         example: Internal server error
         type: string
@@ -11,6 +14,9 @@ definitions:
     type: object
   internal_product.InvalidBodyResponse:
     properties:
+      error_code:
+        example: INVALID_PAYLOAD
+        type: string
       message:
         example: Invalid body
         type: string
@@ -31,6 +37,9 @@ definitions:
     type: object
   internal_product.ValidationErrorResponse:
     properties:
+      error_code:
+        example: VALIDATION_ERROR
+        type: string
       errors:
         additionalProperties:
           type: string
@@ -78,8 +87,24 @@ definitions:
     - price
     - stock
     type: object
+  sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode:
+    enum:
+    - INTERNAL_ERROR
+    - NOT_FOUND
+    - VALIDATION_ERROR
+    - INVALID_PAYLOAD
+    - PRODUCT_NOT_FOUND
+    type: string
+    x-enum-varnames:
+    - ErrInternal
+    - ErrCodeNotFound
+    - ErrValidation
+    - ErrInvalidPayload
+    - ErrProductNotFound
   sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse:
     properties:
+      error_code:
+        $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode'
       errors:
         additionalProperties:
           type: string

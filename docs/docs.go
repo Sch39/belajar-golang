@@ -272,6 +272,10 @@ const docTemplate = `{
         "internal_product.InternalServerErrorResponse": {
             "type": "object",
             "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "INTERNAL_ERROR"
+                },
                 "message": {
                     "type": "string",
                     "example": "Internal server error"
@@ -285,6 +289,10 @@ const docTemplate = `{
         "internal_product.InvalidBodyResponse": {
             "type": "object",
             "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "INVALID_PAYLOAD"
+                },
                 "message": {
                     "type": "string",
                     "example": "Invalid body"
@@ -314,6 +322,10 @@ const docTemplate = `{
         "internal_product.ValidationErrorResponse": {
             "type": "object",
             "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "VALIDATION_ERROR"
+                },
                 "errors": {
                     "type": "object",
                     "additionalProperties": {
@@ -379,9 +391,29 @@ const docTemplate = `{
                 }
             }
         },
+        "sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode": {
+            "type": "string",
+            "enum": [
+                "INTERNAL_ERROR",
+                "NOT_FOUND",
+                "VALIDATION_ERROR",
+                "INVALID_PAYLOAD",
+                "PRODUCT_NOT_FOUND"
+            ],
+            "x-enum-varnames": [
+                "ErrInternal",
+                "ErrCodeNotFound",
+                "ErrValidation",
+                "ErrInvalidPayload",
+                "ErrProductNotFound"
+            ]
+        },
         "sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse": {
             "type": "object",
             "properties": {
+                "error_code": {
+                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode"
+                },
                 "errors": {
                     "type": "object",
                     "additionalProperties": {

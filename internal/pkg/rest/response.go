@@ -4,6 +4,8 @@ package rest
 import (
 	"encoding/json"
 	"net/http"
+
+	"sch.dev/my-kasir-gw/internal/pkg/apperror"
 )
 
 type SuccessResponse struct {
@@ -13,9 +15,10 @@ type SuccessResponse struct {
 }
 
 type FailResponse struct {
-	Success bool              `json:"success" example:"false"`
-	Message string            `json:"message,omitempty" example:"There were validation errors"`
-	Errors  map[string]string `json:"errors,omitempty"`
+	Success   bool               `json:"success" example:"false"`
+	Message   string             `json:"message,omitempty" example:"There were validation errors"`
+	Errors    map[string]string  `json:"errors,omitempty"`
+	ErrorCode apperror.ErrorCode `json:"error_code"`
 }
 
 func JSON(w http.ResponseWriter, status int, resp interface{}) {
@@ -36,6 +39,11 @@ func Success(data interface{}, message ...string) SuccessResponse {
 	}
 }
 
-func Fail(message string, errors map[string]string) FailResponse {
-	return FailResponse{Success: false, Message: message, Errors: errors}
+func Fail(code apperror.ErrorCode, message string, errors map[string]string) FailResponse {
+	return FailResponse{
+		Success:   false,
+		Message:   message,
+		Errors:    errors,
+		ErrorCode: code,
+	}
 }

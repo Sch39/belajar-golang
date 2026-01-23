@@ -15,17 +15,20 @@ type ProductsSuccessResponse struct {
 }
 
 type ValidationErrorResponse struct {
-	Success bool              `json:"success" example:"false"`
-	Message string            `json:"message" example:"Validation error"`
-	Errors  map[string]string `json:"errors" example:"name:required,price:gt=0"`
+	Success   bool              `json:"success" example:"false"`
+	Message   string            `json:"message" example:"Validation error"`
+	Errors    map[string]string `json:"errors" example:"name:required,price:gt=0"`
+	ErrorCode string            `json:"error_code" example:"VALIDATION_ERROR"`
 }
 
 type InvalidBodyResponse struct {
-	Success bool   `json:"success" example:"false"`
-	Message string `json:"message" example:"Invalid body"`
+	Success   bool   `json:"success" example:"false"`
+	Message   string `json:"message" example:"Invalid body"`
+	ErrorCode string `json:"error_code" example:"INVALID_PAYLOAD"`
 }
 
 type InternalServerErrorResponse struct {
-	Success bool   `json:"success" example:"false"`
-	Message string `json:"message" example:"Internal server error"`
+	Success   bool   `json:"success" example:"false"`
+	Message   string `json:"message" example:"Internal server error"`
+	ErrorCode string `json:"error_code" example:"INTERNAL_ERROR"`
 }
