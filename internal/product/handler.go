@@ -104,8 +104,8 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 		default:
 			code := apperror.ErrInternal
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
+			return
 		}
-		return
 	}
 	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product)))
 }
