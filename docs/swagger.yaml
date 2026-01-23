@@ -1,6 +1,51 @@
 basePath: /
 definitions:
-  product.productResponse:
+  internal_product.InternalServerErrorResponse:
+    properties:
+      message:
+        example: Internal server error
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_product.InvalidBodyResponse:
+    properties:
+      message:
+        example: Invalid body
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_product.ProductSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_product.productResponse'
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_product.ValidationErrorResponse:
+    properties:
+      errors:
+        additionalProperties:
+          type: string
+        example:
+          name: required
+          price: gt=0
+        type: object
+      message:
+        example: Validation error
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_product.productResponse:
     properties:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
@@ -15,7 +60,7 @@ definitions:
         example: 10
         type: integer
     type: object
-  product.upsertRequest:
+  internal_product.upsertRequest:
     properties:
       name:
         example: Kopi Susu Gula Aren
@@ -33,7 +78,7 @@ definitions:
     - price
     - stock
     type: object
-  rest.FailResponse:
+  sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse:
     properties:
       errors:
         additionalProperties:
@@ -46,7 +91,7 @@ definitions:
         example: false
         type: boolean
     type: object
-  rest.SuccessResponse:
+  sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse:
     properties:
       data: {}
       message:
@@ -73,17 +118,17 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/rest.SuccessResponse'
+            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/product.productResponse'
+                    $ref: '#/definitions/internal_product.productResponse'
                   type: array
               type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/rest.FailResponse'
+            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
       summary: Get all products
       tags:
       - products
@@ -97,30 +142,26 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/product.upsertRequest'
+          $ref: '#/definitions/internal_product.upsertRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            allOf:
-            - $ref: '#/definitions/rest.SuccessResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/product.productResponse'
-              type: object
+            $ref: '#/definitions/internal_product.ProductSuccessResponse'
         "400":
-          description: Bad Request
+          description: Invalid JSON body
           schema:
-            allOf:
-            - $ref: '#/definitions/rest.FailResponse'
-            - properties:
-                errors:
-                  additionalProperties:
-                    type: string
-                  type: object
-              type: object
+            $ref: '#/definitions/internal_product.InvalidBodyResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/internal_product.ValidationErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_product.InternalServerErrorResponse'
       summary: Create a new product
       tags:
       - products
@@ -140,11 +181,11 @@ paths:
         "200":
           description: Success deleted
           schema:
-            $ref: '#/definitions/rest.SuccessResponse'
+            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/rest.FailResponse'
+            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
       summary: Delete a product
       tags:
       - products
@@ -164,15 +205,15 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/rest.SuccessResponse'
+            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/product.productResponse'
+                  $ref: '#/definitions/internal_product.productResponse'
               type: object
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/rest.FailResponse'
+            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
       summary: Get a product by ID
       tags:
       - products
@@ -192,7 +233,7 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/product.upsertRequest'
+          $ref: '#/definitions/internal_product.upsertRequest'
       produces:
       - application/json
       responses:
@@ -200,16 +241,16 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/rest.SuccessResponse'
+            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/product.productResponse'
+                  $ref: '#/definitions/internal_product.productResponse'
               type: object
         "400":
           description: Validation Error
           schema:
             allOf:
-            - $ref: '#/definitions/rest.FailResponse'
+            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
             - properties:
                 errors:
                   additionalProperties:
@@ -219,7 +260,7 @@ paths:
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/rest.FailResponse'
+            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
       summary: Update an existing product
       tags:
       - products

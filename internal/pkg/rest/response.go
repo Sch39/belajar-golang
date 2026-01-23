@@ -13,9 +13,9 @@ type SuccessResponse struct {
 }
 
 type FailResponse struct {
-	Success bool               `json:"success" example:"false"`
-	Message string             `json:"message,omitempty" example:"There were validation errors"`
-	Errors  *map[string]string `json:"errors,omitempty"`
+	Success bool              `json:"success" example:"false"`
+	Message string            `json:"message,omitempty" example:"There were validation errors"`
+	Errors  map[string]string `json:"errors,omitempty"`
 }
 
 func JSON(w http.ResponseWriter, status int, resp interface{}) {
@@ -24,10 +24,18 @@ func JSON(w http.ResponseWriter, status int, resp interface{}) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func Success(data interface{}) SuccessResponse {
-	return SuccessResponse{Success: true, Data: data, Message: "Operation completed successfully"}
+func Success(data interface{}, message ...string) SuccessResponse {
+	msg := "Operation completed successfully"
+	if len(message) > 0 {
+		msg = message[0]
+	}
+	return SuccessResponse{
+		Success: true,
+		Data:    data,
+		Message: msg,
+	}
 }
 
 func Fail(message string, errors map[string]string) FailResponse {
-	return FailResponse{Success: false, Message: message, Errors: &errors}
+	return FailResponse{Success: false, Message: message, Errors: errors}
 }

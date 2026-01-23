@@ -31,7 +31,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/rest.SuccessResponse"
+                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
@@ -39,7 +39,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/product.productResponse"
+                                                "$ref": "#/definitions/internal_product.productResponse"
                                             }
                                         }
                                     }
@@ -50,7 +50,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest.FailResponse"
+                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
                         }
                     }
                 }
@@ -74,7 +74,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.upsertRequest"
+                            "$ref": "#/definitions/internal_product.upsertRequest"
                         }
                     }
                 ],
@@ -82,40 +82,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/rest.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/product.productResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_product.ProductSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid JSON body",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/rest.FailResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "errors": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_product.InvalidBodyResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_product.ValidationErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_product.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -147,13 +132,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/rest.SuccessResponse"
+                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/product.productResponse"
+                                            "$ref": "#/definitions/internal_product.productResponse"
                                         }
                                     }
                                 }
@@ -163,7 +148,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/rest.FailResponse"
+                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
                         }
                     }
                 }
@@ -195,7 +180,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/product.upsertRequest"
+                            "$ref": "#/definitions/internal_product.upsertRequest"
                         }
                     }
                 ],
@@ -205,13 +190,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/rest.SuccessResponse"
+                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/product.productResponse"
+                                            "$ref": "#/definitions/internal_product.productResponse"
                                         }
                                     }
                                 }
@@ -223,7 +208,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/rest.FailResponse"
+                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
                                 },
                                 {
                                     "type": "object",
@@ -242,7 +227,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/rest.FailResponse"
+                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
                         }
                     }
                 }
@@ -270,13 +255,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Success deleted",
                         "schema": {
-                            "$ref": "#/definitions/rest.SuccessResponse"
+                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
                         }
                     },
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/rest.FailResponse"
+                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
                         }
                     }
                 }
@@ -284,7 +269,72 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "product.productResponse": {
+        "internal_product.InternalServerErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_product.InvalidBodyResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Invalid body"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_product.ProductSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_product.productResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_product.ValidationErrorResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "name": "required",
+                        "price": "gt=0"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Validation error"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_product.productResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -305,7 +355,7 @@ const docTemplate = `{
                 }
             }
         },
-        "product.upsertRequest": {
+        "internal_product.upsertRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -329,7 +379,7 @@ const docTemplate = `{
                 }
             }
         },
-        "rest.FailResponse": {
+        "sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse": {
             "type": "object",
             "properties": {
                 "errors": {
@@ -348,7 +398,7 @@ const docTemplate = `{
                 }
             }
         },
-        "rest.SuccessResponse": {
+        "sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse": {
             "type": "object",
             "properties": {
                 "data": {},

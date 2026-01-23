@@ -27,8 +27,10 @@ func NewHandler(s Service) *Handler {
 // @Accept       json
 // @Produce      json
 // @Param        product  body      upsertRequest  true  "Product Request Body"
-// @Success      201      {object}  rest.SuccessResponse{data=productResponse}
-// @Failure      400      {object}  rest.FailResponse{errors=map[string]string}
+// @Success      201      {object}  product.ProductSuccessResponse
+// @Failure      400      {object}  product.InvalidBodyResponse "Invalid JSON body"
+// @Failure      422      {object}  product.ValidationErrorResponse "Validation error"
+// @Failure 500 {object} product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req upsertRequest
@@ -38,7 +40,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := validator.Instance().Struct(req); err != nil {
-		rest.JSON(w, http.StatusBadRequest, rest.Fail("Validation error", rest.ValidationError(err)))
+		rest.JSON(w, http.StatusUnprocessableEntity, rest.Fail("Validation error", rest.ValidationError(err)))
 		return
 	}
 
@@ -53,7 +55,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rest.JSON(w, http.StatusCreated, rest.Success(toResponse(product)))
+	rest.JSON(w, http.StatusCreated, rest.Success(toResponse(product), "Product created successfully"))
 }
 
 // GetAll godoc
@@ -137,7 +139,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 		}
 		return
 	}
-	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product)))
+	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product), "Product updated successfully"))
 }
 
 // Delete godoc
@@ -159,7 +161,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 		}
 		return
 	}
-	rest.JSON(w, http.StatusOK, rest.Success(nil))
+	rest.JSON(w, http.StatusOK, rest.Success(nil, "Product deleted successfully"))
 }
 
 func toResponse(p *domain.Product) productResponse {
