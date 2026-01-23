@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  internal_product.BaseSuccessResponse:
+    properties:
+      message:
+        example: Product deleted successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
   internal_product.InternalServerErrorResponse:
     properties:
       error_code:
@@ -24,10 +33,35 @@ definitions:
         example: false
         type: boolean
     type: object
+  internal_product.ProductNotFoundResponse:
+    properties:
+      error_code:
+        example: PRODUCT_NOT_FOUND
+        type: string
+      message:
+        example: Product not found
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
   internal_product.ProductSuccessResponse:
     properties:
       data:
         $ref: '#/definitions/internal_product.productResponse'
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_product.ProductsSuccessResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_product.productResponse'
+        type: array
       message:
         example: Operation completed successfully
         type: string
@@ -87,45 +121,6 @@ definitions:
     - price
     - stock
     type: object
-  sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode:
-    enum:
-    - INTERNAL_ERROR
-    - NOT_FOUND
-    - VALIDATION_ERROR
-    - INVALID_PAYLOAD
-    - PRODUCT_NOT_FOUND
-    type: string
-    x-enum-varnames:
-    - ErrInternal
-    - ErrCodeNotFound
-    - ErrValidation
-    - ErrInvalidPayload
-    - ErrProductNotFound
-  sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse:
-    properties:
-      error_code:
-        $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode'
-      errors:
-        additionalProperties:
-          type: string
-        type: object
-      message:
-        example: There were validation errors
-        type: string
-      success:
-        example: false
-        type: boolean
-    type: object
-  sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse:
-    properties:
-      data: {}
-      message:
-        example: Operation completed successfully
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -142,18 +137,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/internal_product.productResponse'
-                  type: array
-              type: object
+            $ref: '#/definitions/internal_product.ProductsSuccessResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
+            $ref: '#/definitions/internal_product.InternalServerErrorResponse'
       summary: Get all products
       tags:
       - products
@@ -206,11 +194,15 @@ paths:
         "200":
           description: Success deleted
           schema:
-            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
+            $ref: '#/definitions/internal_product.BaseSuccessResponse'
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
+            $ref: '#/definitions/internal_product.ProductNotFoundResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_product.InternalServerErrorResponse'
       summary: Delete a product
       tags:
       - products
@@ -229,16 +221,15 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_product.productResponse'
-              type: object
+            $ref: '#/definitions/internal_product.ProductSuccessResponse'
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
+            $ref: '#/definitions/internal_product.ProductNotFoundResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_product.InternalServerErrorResponse'
       summary: Get a product by ID
       tags:
       - products
@@ -265,27 +256,23 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/internal_product.productResponse'
-              type: object
+            $ref: '#/definitions/internal_product.ProductSuccessResponse'
         "400":
-          description: Validation Error
+          description: Invalid JSON body
           schema:
-            allOf:
-            - $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
-            - properties:
-                errors:
-                  additionalProperties:
-                    type: string
-                  type: object
-              type: object
+            $ref: '#/definitions/internal_product.InvalidBodyResponse'
         "404":
           description: Product Not Found
           schema:
-            $ref: '#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse'
+            $ref: '#/definitions/internal_product.ProductNotFoundResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/internal_product.ValidationErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_product.InternalServerErrorResponse'
       summary: Update an existing product
       tags:
       - products

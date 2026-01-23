@@ -2,6 +2,11 @@
 
 package product
 
+type BaseSuccessResponse struct {
+	Success bool   `json:"success" example:"true"`
+	Message string `json:"message" example:"Product deleted successfully"`
+}
+
 type ProductSuccessResponse struct {
 	Success bool            `json:"success" example:"true"`
 	Message string          `json:"message" example:"Operation completed successfully"`
@@ -31,4 +36,10 @@ type InternalServerErrorResponse struct {
 	Success   bool   `json:"success" example:"false"`
 	Message   string `json:"message" example:"Internal server error"`
 	ErrorCode string `json:"error_code" example:"INTERNAL_ERROR"`
+}
+
+type ProductNotFoundResponse struct {
+	Success   bool   `json:"success" example:"false"`
+	Message   string `json:"message" example:"Product not found"`
+	ErrorCode string `json:"error_code" example:"PRODUCT_NOT_FOUND"`
 }

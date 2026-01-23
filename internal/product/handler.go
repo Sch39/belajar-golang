@@ -67,8 +67,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Description  Retrieve a list of all products
 // @Tags         products
 // @Produce      json
-// @Success      200      {object}  rest.SuccessResponse{data=[]productResponse}
-// @Failure      500      {object}  rest.FailResponse
+// @Success      200      {object}  product.ProductsSuccessResponse
+// @Failure      500      {object}  product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products [get]
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.service.GetAll(r.Context())
@@ -90,8 +90,9 @@ func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Tags         products
 // @Produce      json
 // @Param        id   path      string  true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
-// @Success      200  {object}  rest.SuccessResponse{data=productResponse}
-// @Failure      404  {object}  rest.FailResponse "Product Not Found"
+// @Success      200  {object}  product.ProductSuccessResponse
+// @Failure      404  {object}  product.ProductNotFoundResponse "Product Not Found"
+// @Failure      500  {object}  product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products/{id} [get]
 func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 	product, err := h.service.GetByID(r.Context(), id)
@@ -117,9 +118,11 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 // @Produce      json
 // @Param        id       path      string         true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
 // @Param        product  body      upsertRequest  true  "Updated Product Data"
-// @Success      200      {object}  rest.SuccessResponse{data=productResponse}
-// @Failure      400      {object}  rest.FailResponse{errors=map[string]string} "Validation Error"
-// @Failure      404      {object}  rest.FailResponse "Product Not Found"
+// @Success      200      {object}  product.ProductSuccessResponse
+// @Failure      400      {object}  product.InvalidBodyResponse "Invalid JSON body"
+// @Failure      404      {object}  product.ProductNotFoundResponse "Product Not Found"
+// @Failure      422      {object}  product.ValidationErrorResponse "Validation error"
+// @Failure 500 {object} product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products/{id} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 	var req upsertRequest
@@ -159,8 +162,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 // @Tags         products
 // @Produce      json
 // @Param        id   path      string  true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
-// @Success      200  {object}  rest.SuccessResponse "Success deleted"
-// @Failure      404  {object}  rest.FailResponse "Product Not Found"
+// @Success      200  {object}  product.BaseSuccessResponse "Success deleted"
+// @Failure      404  {object}  product.ProductNotFoundResponse "Product Not Found"
+// @Failure      500  {object}  product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products/{id} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if err := h.service.Delete(r.Context(), id); err != nil {

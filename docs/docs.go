@@ -29,28 +29,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/internal_product.productResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_product.ProductsSuccessResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
+                            "$ref": "#/definitions/internal_product.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -130,25 +115,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_product.productResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_product.ProductSuccessResponse"
                         }
                     },
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
+                            "$ref": "#/definitions/internal_product.ProductNotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_product.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -188,46 +167,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/internal_product.productResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_product.ProductSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Validation Error",
+                        "description": "Invalid JSON body",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "errors": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/internal_product.InvalidBodyResponse"
                         }
                     },
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
+                            "$ref": "#/definitions/internal_product.ProductNotFoundResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_product.ValidationErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_product.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -255,13 +219,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Success deleted",
                         "schema": {
-                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse"
+                            "$ref": "#/definitions/internal_product.BaseSuccessResponse"
                         }
                     },
                     "404": {
                         "description": "Product Not Found",
                         "schema": {
-                            "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse"
+                            "$ref": "#/definitions/internal_product.ProductNotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_product.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -269,6 +239,19 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "internal_product.BaseSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Product deleted successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "internal_product.InternalServerErrorResponse": {
             "type": "object",
             "properties": {
@@ -303,11 +286,47 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_product.ProductNotFoundResponse": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "PRODUCT_NOT_FOUND"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Product not found"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
         "internal_product.ProductSuccessResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_product.productResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_product.ProductsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_product.productResponse"
+                    }
                 },
                 "message": {
                     "type": "string",
@@ -388,59 +407,6 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0,
                     "example": 10
-                }
-            }
-        },
-        "sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode": {
-            "type": "string",
-            "enum": [
-                "INTERNAL_ERROR",
-                "NOT_FOUND",
-                "VALIDATION_ERROR",
-                "INVALID_PAYLOAD",
-                "PRODUCT_NOT_FOUND"
-            ],
-            "x-enum-varnames": [
-                "ErrInternal",
-                "ErrCodeNotFound",
-                "ErrValidation",
-                "ErrInvalidPayload",
-                "ErrProductNotFound"
-            ]
-        },
-        "sch_dev_my-kasir-gw_internal_pkg_rest.FailResponse": {
-            "type": "object",
-            "properties": {
-                "error_code": {
-                    "$ref": "#/definitions/sch_dev_my-kasir-gw_internal_pkg_apperror.ErrorCode"
-                },
-                "errors": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "message": {
-                    "type": "string",
-                    "example": "There were validation errors"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": false
-                }
-            }
-        },
-        "sch_dev_my-kasir-gw_internal_pkg_rest.SuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "message": {
-                    "type": "string",
-                    "example": "Operation completed successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
                 }
             }
         }
