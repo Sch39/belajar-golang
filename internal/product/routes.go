@@ -1,4 +1,4 @@
-// internal\http\router.go
+// internal/product/routes.go
 package product
 
 import "net/http"
