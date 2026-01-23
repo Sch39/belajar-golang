@@ -150,8 +150,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 		default:
 			code := apperror.ErrInternal
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
+			return
 		}
-		return
 	}
 	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product), "Product updated successfully"))
 }
@@ -175,8 +175,8 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 		default:
 			code := apperror.ErrInternal
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
+			return
 		}
-		return
 	}
 	rest.JSON(w, http.StatusOK, rest.Success(nil, "Product deleted successfully"))
 }
