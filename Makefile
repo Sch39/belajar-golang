@@ -29,7 +29,7 @@ build-be:
 
 build-swagger:
 	@echo "Generating Swagger Documentation..."
-	swag init -g $(GO_MAIN) --output ./docs
+	swag init -g $(GO_MAIN) --output ./docs --parseDependency --parseInternal
 
 ## clean: Membersihkan hasil build
 clean:
