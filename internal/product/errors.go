@@ -3,4 +3,4 @@ package product
 
 import "errors"
 
-var ErrNotFound = errors.New("product not found")
+var ErrNotFound = errors.New("Product not found")
