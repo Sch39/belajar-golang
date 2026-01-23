@@ -9,23 +9,23 @@ import (
 	"sch.dev/my-kasir-gw/internal/product"
 )
 
-type repository struct {
+type productRepository struct {
 	db *sql.DB
 }
 
 func NewProductRepository(db *sql.DB) product.Repository {
-	return &repository{db: db}
+	return &productRepository{db: db}
 }
 
 // Implement the methods of ProductRepository interface
-func (r *repository) Create(ctx context.Context, product *domain.Product) error {
+func (r *productRepository) Create(ctx context.Context, product *domain.Product) error {
 	query := "INSERT INTO products (id, name, price, stock, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
 	_, err := r.db.ExecContext(ctx, query, product.ID, product.Name, product.Price, product.Stock, product.CreatedAt, product.UpdatedAt)
 
 	return err
 }
 
-func (r *repository) FindAll(ctx context.Context) ([]domain.Product, error) {
+func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, error) {
 	query := "SELECT id, name, price, stock, created_at, updated_at FROM products WHERE is_active = 1"
 	rows, err := r.db.QueryContext(ctx, query)
 
@@ -49,7 +49,7 @@ func (r *repository) FindAll(ctx context.Context) ([]domain.Product, error) {
 	return products, nil
 }
 
-func (r *repository) FindByID(ctx context.Context, id string) (*domain.Product, error) {
+func (r *productRepository) FindByID(ctx context.Context, id string) (*domain.Product, error) {
 	query := "SELECT id, name, price, stock, created_at, updated_at FROM products WHERE id = ? AND is_active = 1"
 	row := r.db.QueryRowContext(ctx, query, id)
 	var product domain.Product
@@ -62,13 +62,13 @@ func (r *repository) FindByID(ctx context.Context, id string) (*domain.Product, 
 	return &product, nil
 }
 
-func (r *repository) Update(ctx context.Context, product *domain.Product) error {
+func (r *productRepository) Update(ctx context.Context, product *domain.Product) error {
 	query := "UPDATE products SET name = ?, price = ?, stock = ?, updated_at = ? WHERE id = ? AND is_active = 1"
 	_, err := r.db.ExecContext(ctx, query, product.Name, product.Price, product.Stock, product.UpdatedAt, product.ID)
 	return err
 }
 
-func (r *repository) Delete(ctx context.Context, product *domain.Product) error {
+func (r *productRepository) Delete(ctx context.Context, product *domain.Product) error {
 	query := "UPDATE products SET is_active = 0, deleted_at = ? WHERE id = ?"
 	_, err := r.db.ExecContext(ctx, query, product.DeletedAt, product.ID)
 	return err
