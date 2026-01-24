@@ -29,7 +29,7 @@ install-swag:
 ## build-be: Build backend (menggunakan BINARY_FINAL)
 build-be:
 	@echo "Building Backend..."
-	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o $(BINARY_FINAL) $(GO_MAIN)
+	go build -o $(BINARY_FINAL) $(GO_MAIN)
 
 ## build-swagger: Build swagger documentation
 build-swagger: install-swag
