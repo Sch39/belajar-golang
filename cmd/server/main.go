@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
+	"sch.dev/my-kasir-gw/internal/category"
 	"sch.dev/my-kasir-gw/internal/product"
 	"sch.dev/my-kasir-gw/internal/storage/database"
 	"sch.dev/my-kasir-gw/internal/storage/repository/sqlite"
@@ -21,6 +23,7 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
+	// Database
 	databasePath := "data.db"
 	conn, err := database.NewSqliteConn(databasePath)
 	if err != nil {
@@ -28,26 +31,39 @@ func main() {
 		return
 	}
 
+	// Migration
 	if err := database.MigrateSqlite(conn); err != nil {
 		log.Fatal("Database migration failed:", err)
 		return
 	}
 
+	// Product
 	productRepo := sqlite.NewProductRepository(conn)
 	productService := product.NewService(productRepo)
 	productHandler := product.NewHandler(productService)
 
+	// Category
+	categoryRepo := sqlite.NewCategoryRepository(conn)
+	categoryService := category.NewService(categoryRepo)
+	categoryHandler := category.NewHandler(categoryService)
+
+	// Mux
 	mux := http.NewServeMux()
 
+	// Register route
 	productHandler.RegisterRoutes(mux)
+	categoryHandler.RegisterRoutes(mux)
 
+	// Front End
 	mux.Handle("/", http.FileServer(http.Dir("./public")))
 
+	// Health
 	mux.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"message": "API Running",
+			"status":    "UP",
+			"version":   "1.0.0",
+			"timestamp": time.Now().Format(time.RFC3339),
 		})
 	}))
 

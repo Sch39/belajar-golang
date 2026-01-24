@@ -12,13 +12,16 @@ const (
 
 	// product errors
 	ErrProductNotFound ErrorCode = "PRODUCT_NOT_FOUND"
+
+	// category errors
+	ErrCategoryNotFound ErrorCode = "CATEGORY_NOT_FOUND"
 )
 
 func (e ErrorCode) ToHttpStatus() int {
 	switch e {
 	case ErrInvalidPayload:
 		return 400
-	case ErrCodeNotFound, ErrProductNotFound:
+	case ErrCodeNotFound, ErrProductNotFound, ErrCategoryNotFound:
 		return 404
 	case ErrValidation:
 		return 422

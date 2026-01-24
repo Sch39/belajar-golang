@@ -1,0 +1,33 @@
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "Kopi 2",
+    "description": "Berisi kopi-kopi pilihan."
+}
+
+###
+GET http://localhost:8080/api/categories
+Accept: application/json
+
+###
+@CATEGORY_ID = 9c4c0934-48a0-4d19-9307-e899373a17f7
+
+###
+GET http://localhost:8080/api/categories/{{CATEGORY_ID}}
+Accept: application/json
+
+###
+PUT http://localhost:8080/api/categories/{{CATEGORY_ID}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "Kopi",
+    "description": "Berisi kopi"
+}
+
+###
+DELETE http://localhost:8080/api/categories/{{CATEGORY_ID}}
+Accept: application/json
