@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"sch.dev/my-kasir-gw/internal/category"
 	"sch.dev/my-kasir-gw/internal/product"
 	"sch.dev/my-kasir-gw/internal/storage/database"
-	"sch.dev/my-kasir-gw/internal/storage/repository/sqlite"
+	"sch.dev/my-kasir-gw/internal/storage/repository/postgres"
 
 	_ "sch.dev/my-kasir-gw/docs"
 )
@@ -24,26 +26,30 @@ import (
 // @BasePath /
 func main() {
 	// Database
-	databasePath := "data.db"
-	conn, err := database.NewSqliteConn(databasePath)
+	_ = godotenv.Load()
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is required")
+	}
+	conn, err := database.NewPostgresConn(dsn)
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 		return
 	}
 
 	// Migration
-	if err := database.MigrateSqlite(conn); err != nil {
+	if err := database.MigratePostgres(conn); err != nil {
 		log.Fatal("Database migration failed:", err)
 		return
 	}
 
 	// Product
-	productRepo := sqlite.NewProductRepository(conn)
+	productRepo := postgres.NewProductRepository(conn)
 	productService := product.NewService(productRepo)
 	productHandler := product.NewHandler(productService)
 
 	// Category
-	categoryRepo := sqlite.NewCategoryRepository(conn)
+	categoryRepo := postgres.NewCategoryRepository(conn)
 	categoryService := category.NewService(categoryRepo)
 	categoryHandler := category.NewHandler(categoryService)
 

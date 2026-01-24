@@ -1,0 +1,12 @@
+-- 002_categories.sql
+CREATE TABLE IF NOT EXISTS categories (
+	id TEXT PRIMARY KEY,
+	name TEXT NOT NULL,
+	description TEXT,
+
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+	deleted_at TIMESTAMPTZ,
+	is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
