@@ -4,21 +4,25 @@ WORKDIR /app/web
 COPY web/package*.json ./
 RUN npm install --legacy-peer-deps
 COPY web/ ./
+# Build frontend ke folder /public
 RUN npm run build
 
 # Stage 2: Build backend
 FROM golang:1.21-alpine AS backend-builder
 WORKDIR /app
+
 # Install swag CLI
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
-# Copy backend source
-COPY cmd ./cmd
+# Copy go.mod dan go.sum dulu untuk caching
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy frontend build
-COPY --from=frontend-builder /app/web/public ./web/public
+# Copy seluruh source code backend + frontend build
+COPY . .
+
+# Copy frontend build hasil npm run build
+COPY --from=frontend-builder /app/public ./web/public
 
 # Generate Swagger docs
 RUN swag init -g cmd/server/main.go --output ./docs --parseDependency --parseInternal
@@ -32,9 +36,11 @@ RUN go build -o ${BINARY_NAME} ${GO_MAIN}
 FROM alpine:3.18
 WORKDIR /app
 RUN apk add --no-cache ca-certificates
+
+# Copy binary, Swagger docs, dan frontend build
 COPY --from=backend-builder /app/my-kasir-gw .
 COPY --from=backend-builder /app/docs ./docs
-COPY --from=backend-builder /app/web/public ./web/public
+COPY --from=backend-builder /app/public ./public
 
 EXPOSE 8080
 CMD ["./my-kasir-gw"]
