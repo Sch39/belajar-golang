@@ -6,15 +6,19 @@ BUILD_DIR=public
 # Deteksi OS
 ifeq ($(OS),Windows_NT)
     BINARY_FINAL=$(BINARY_NAME).exe
+    RM=del /Q
+    MKDIR=mkdir
 else
     BINARY_FINAL=$(BINARY_NAME)
+    RM=rm -f
+    MKDIR=mkdir -p
 endif
 
-.PHONY: all build build-fe build-be build-swagger run clean help install-swag
+.PHONY: all build build-fe build-be build-swagger run run-dev clean help install-swag
 
 all: build
 
-## build: Melakukan build FE dan BE secara berurutan
+## build: Build frontend + swagger + backend
 build: build-fe build-swagger build-be
 
 ## build-fe: Build frontend
@@ -26,26 +30,31 @@ build-fe:
 install-swag:
 	@which swag >/dev/null || go install github.com/swaggo/swag/cmd/swag@latest
 
-## build-be: Build backend (menggunakan BINARY_FINAL)
+## build-be: Build backend (OS-aware)
 build-be:
 	@echo "Building Backend..."
 	go build -o $(BINARY_FINAL) $(GO_MAIN)
 
-## build-swagger: Build swagger documentation
+## build-swagger: Generate Swagger docs
 build-swagger: install-swag
 	@echo "Generating Swagger Documentation..."
 	swag init -g $(GO_MAIN) --output ./docs --parseDependency --parseInternal
 
-## run: Menjalankan aplikasi
+## run: Jalankan binary
 run:
 	@echo "Running the application..."
 	./$(BINARY_FINAL)
 
-## clean: Membersihkan hasil build
+## run-dev: Jalankan frontend + backend tanpa build binary
+run-dev:
+	@echo "Running Backend in dev mode..."
+	go run $(GO_MAIN)
+
+## clean: Bersihkan hasil build
 clean:
 	@echo "Cleaning up..."
-	rm -f $(BINARY_NAME) $(BINARY_NAME).exe
-	rm -rf $(BUILD_DIR)
+	$(RM) $(BINARY_FINAL)
+	-@rm -rf $(BUILD_DIR) docs 2>nul || true
 
 help:
 	@echo "Daftar perintah:"
