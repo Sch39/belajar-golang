@@ -20,7 +20,7 @@ build: build-fe build-be build-swagger
 ## build-fe: Build frontend
 build-fe:
 	@echo "Building Frontend..."
-	cd $(FRONTEND_DIR) && npm ci && npm run build
+	cd $(FRONTEND_DIR) && npm install --legacy-peer-deps && npm run build
 
 ## build-be: Build backend (menggunakan BINARY_FINAL)
 build-be:
