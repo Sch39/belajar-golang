@@ -3,5 +3,5 @@ package category
 
 type upsertRequest struct {
 	Name        string `json:"name" validate:"required,min=3" example:"Coffe"`
-	Description string `json:"description"`
+	Description string `json:"description" example:""`
 }

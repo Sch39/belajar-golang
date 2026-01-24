@@ -1,5 +1,123 @@
 basePath: /
 definitions:
+  internal_category.BaseSuccessResponse:
+    properties:
+      message:
+        example: Category deleted successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_category.CategoryListSuccessResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_category.categoryResponse'
+        type: array
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_category.CategoryNotFoundResponse:
+    properties:
+      error_code:
+        example: CATEGORY_NOT_FOUND
+        type: string
+      message:
+        example: Category not found
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_category.CategorySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_category.categoryResponse'
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_category.InternalServerErrorResponse:
+    properties:
+      error_code:
+        example: INTERNAL_ERROR
+        type: string
+      message:
+        example: Internal server error
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_category.InvalidBodyResponse:
+    properties:
+      error_code:
+        example: INVALID_PAYLOAD
+        type: string
+      message:
+        example: Invalid body
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_category.ValidateErrorResponse:
+    properties:
+      error_code:
+        example: VALIDATION_ERROR
+        type: string
+      errors:
+        additionalProperties:
+          type: string
+        example:
+          name: required
+          price: gt=0
+        type: object
+      message:
+        example: Validation error
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_category.categoryResponse:
+    properties:
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Berisi daftar menu kopi
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Kopi
+        type: string
+      updated_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    type: object
+  internal_category.upsertRequest:
+    properties:
+      description:
+        example: ""
+        type: string
+      name:
+        example: Coffe
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
   internal_product.BaseSuccessResponse:
     properties:
       message:
@@ -128,6 +246,154 @@ info:
   title: My Kasir API Guweh
   version: "1.0"
 paths:
+  /api/categories:
+    get:
+      description: Retrieve a list of all categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_category.CategoryListSuccessResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_category.InternalServerErrorResponse'
+      summary: Get all categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Save a new category to database
+      parameters:
+      - description: Category Request Body
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/internal_category.upsertRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_category.CategorySuccessResponse'
+        "400":
+          description: Invalid JSON body
+          schema:
+            $ref: '#/definitions/internal_category.InvalidBodyResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/internal_category.ValidateErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_category.InternalServerErrorResponse'
+      summary: Create a new category
+      tags:
+      - categories
+  /api/categories/{id}:
+    delete:
+      description: Remove a category from the database by its ID
+      parameters:
+      - description: Category ID
+        example: 550e8400-e29b-41d4-a716-446655440000
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success deleted
+          schema:
+            $ref: '#/definitions/internal_category.BaseSuccessResponse'
+        "404":
+          description: Category Not Found
+          schema:
+            $ref: '#/definitions/internal_category.CategoryNotFoundResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_category.InternalServerErrorResponse'
+      summary: Delete a category
+      tags:
+      - categories
+    get:
+      description: Get detailed information about a specific category
+      parameters:
+      - description: Category ID
+        example: 550e8400-e29b-41d4-a716-446655440000
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_category.CategorySuccessResponse'
+        "404":
+          description: Category Not Found
+          schema:
+            $ref: '#/definitions/internal_category.CategoryNotFoundResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_category.InternalServerErrorResponse'
+      summary: Get a category by ID
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update category details by its ID
+      parameters:
+      - description: Category ID
+        example: 550e8400-e29b-41d4-a716-446655440000
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated Category Data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/internal_category.upsertRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_category.CategorySuccessResponse'
+        "400":
+          description: Invalid JSON body
+          schema:
+            $ref: '#/definitions/internal_category.InvalidBodyResponse'
+        "404":
+          description: Category Not Found
+          schema:
+            $ref: '#/definitions/internal_category.CategoryNotFoundResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/internal_category.ValidateErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_category.InternalServerErrorResponse'
+      summary: Update an existing category
+      tags:
+      - categories
   /api/products:
     get:
       description: Retrieve a list of all products
