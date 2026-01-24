@@ -10,17 +10,21 @@ else
     BINARY_FINAL=$(BINARY_NAME)
 endif
 
-.PHONY: all build build-fe build-be clean help
+.PHONY: all build build-fe build-be build-swagger run clean help install-swag
 
 all: build
 
 ## build: Melakukan build FE dan BE secara berurutan
-build: build-fe build-be build-swagger
+build: build-fe build-swagger build-be
 
 ## build-fe: Build frontend
 build-fe:
 	@echo "Building Frontend..."
 	cd $(FRONTEND_DIR) && npm install --legacy-peer-deps && npm run build
+
+## install-swag: Install swag CLI jika belum ada
+install-swag:
+	@which swag >/dev/null || go install github.com/swaggo/swag/cmd/swag@latest
 
 ## build-be: Build backend (menggunakan BINARY_FINAL)
 build-be:
@@ -28,9 +32,14 @@ build-be:
 	go build -o $(BINARY_FINAL) $(GO_MAIN)
 
 ## build-swagger: Build swagger documentation
-build-swagger:
+build-swagger: install-swag
 	@echo "Generating Swagger Documentation..."
 	swag init -g $(GO_MAIN) --output ./docs --parseDependency --parseInternal
+
+## run: Menjalankan aplikasi
+run:
+	@echo "Running the application..."
+	./$(BINARY_FINAL)
 
 ## clean: Membersihkan hasil build
 clean:
