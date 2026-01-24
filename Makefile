@@ -29,7 +29,7 @@ install-swag:
 ## build-be: Build backend (menggunakan BINARY_FINAL)
 build-be:
 	@echo "Building Backend..."
-	go build -o $(BINARY_FINAL) $(GO_MAIN)
+	CGO_ENABLED=1 go build -o $(BINARY_FINAL) $(GO_MAIN)
 
 ## build-swagger: Build swagger documentation
 build-swagger: install-swag
