@@ -27,6 +27,7 @@ build-be:
 	@echo "Building Backend..."
 	go build -o $(BINARY_FINAL) $(GO_MAIN)
 
+## build-swagger: Build swagger documentation
 build-swagger:
 	@echo "Generating Swagger Documentation..."
 	swag init -g $(GO_MAIN) --output ./docs --parseDependency --parseInternal
