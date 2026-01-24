@@ -101,6 +101,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 		case ErrNotFound:
 			code := apperror.ErrProductNotFound
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Product not found", nil))
+			return
 		default:
 			code := apperror.ErrInternal
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
