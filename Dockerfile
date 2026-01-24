@@ -18,7 +18,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy frontend build
-COPY --from=frontend-builder /app/web/dist ./web/dist
 COPY --from=frontend-builder /app/web/public ./web/public
 
 # Generate Swagger docs
@@ -35,7 +34,6 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 COPY --from=backend-builder /app/my-kasir-gw .
 COPY --from=backend-builder /app/docs ./docs
-COPY --from=backend-builder /app/web/dist ./web/dist
 COPY --from=backend-builder /app/web/public ./web/public
 
 EXPOSE 8080
