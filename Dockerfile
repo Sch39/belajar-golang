@@ -18,11 +18,8 @@ RUN go install github.com/swaggo/swag/cmd/swag@latest
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy seluruh source code backend + frontend build
+# Copy seluruh source code backend
 COPY . .
-
-# Copy frontend build hasil npm run build
-COPY --from=frontend-builder /app/public ./web/public
 
 # Generate Swagger docs
 RUN swag init -g cmd/server/main.go --output ./docs --parseDependency --parseInternal
@@ -40,7 +37,7 @@ RUN apk add --no-cache ca-certificates
 # Copy binary, Swagger docs, dan frontend build
 COPY --from=backend-builder /app/my-kasir-gw .
 COPY --from=backend-builder /app/docs ./docs
-COPY --from=backend-builder /app/public ./public
+COPY --from=frontend-builder /app/public ./public
 
 EXPOSE 8080
 CMD ["./my-kasir-gw"]
