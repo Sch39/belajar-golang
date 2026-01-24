@@ -22,7 +22,6 @@ import (
 // @title My Kasir API Guweh
 // @version 1.0
 // @description Ini adalah server API untuk aplikasi My Kasir Guweh.
-// @host localhost:8080
 // @BasePath /
 func main() {
 	// Database
