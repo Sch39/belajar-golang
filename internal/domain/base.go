@@ -4,11 +4,11 @@ package domain
 import "time"
 
 type Timestamp struct {
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type SoftDelete struct {
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-	IsActive  bool  `json:"is_active"`
+	DeletedAt *time.Time
+	IsActive  bool
 }
