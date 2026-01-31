@@ -3,26 +3,35 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"sch.dev/my-kasir-gw/internal/category"
 	"sch.dev/my-kasir-gw/internal/domain"
+	"sch.dev/my-kasir-gw/internal/storage/repository"
 )
 
 type categoryRepository struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewCategoryRepository(db *sql.DB) category.Repository {
+func NewCategoryRepository(db *pgxpool.Pool) category.Repository {
 	return &categoryRepository{db: db}
 }
 
 func (r *categoryRepository) Create(ctx context.Context, category *domain.Category) error {
 	query := `
-		INSERT INTO categories (id, name, description, created_at, updated_at)
+		INSERT INTO categories (
+		id, 
+		name, 
+		description, 
+		created_at, 
+		updated_at
+		)
 		VALUES ($1, $2, $3, $4, $5)
 	`
-	_, err := r.db.ExecContext(
+	_, err := r.db.Exec(
 		ctx,
 		query,
 		category.ID,
@@ -31,7 +40,12 @@ func (r *categoryRepository) Create(ctx context.Context, category *domain.Catego
 		category.CreatedAt,
 		category.UpdatedAt,
 	)
-	return err
+
+	if err != nil {
+		return mapPgxError(err)
+	}
+
+	return nil
 }
 
 func (r *categoryRepository) FindAll(ctx context.Context) ([]domain.Category, error) {
@@ -40,7 +54,7 @@ func (r *categoryRepository) FindAll(ctx context.Context) ([]domain.Category, er
 		FROM categories
 		WHERE is_active = true
 	`
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +84,7 @@ func (r *categoryRepository) FindByID(ctx context.Context, id string) (*domain.C
 		FROM categories
 		WHERE id = $1 AND is_active = true
 	`
-	row := r.db.QueryRowContext(ctx, query, id)
+	row := r.db.QueryRow(ctx, query, id)
 
 	var category domain.Category
 	if err := row.Scan(
@@ -80,8 +94,8 @@ func (r *categoryRepository) FindByID(ctx context.Context, id string) (*domain.C
 		&category.CreatedAt,
 		&category.UpdatedAt,
 	); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, repository.ErrNotFound
 		}
 		return nil, err
 	}
@@ -92,10 +106,13 @@ func (r *categoryRepository) FindByID(ctx context.Context, id string) (*domain.C
 func (r *categoryRepository) Update(ctx context.Context, category *domain.Category) error {
 	query := `
 		UPDATE categories
-		SET name = $1, description = $2, updated_at = $3
+		SET 
+			name = $1, 
+			description = $2, 
+			updated_at = $3
 		WHERE id = $4 AND is_active = true
 	`
-	_, err := r.db.ExecContext(
+	ct, err := r.db.Exec(
 		ctx,
 		query,
 		category.Name,
@@ -103,15 +120,29 @@ func (r *categoryRepository) Update(ctx context.Context, category *domain.Catego
 		category.UpdatedAt,
 		category.ID,
 	)
-	return err
+	if err != nil {
+		return mapPgxError(err)
+	}
+	if ct.RowsAffected() == 0 {
+		return repository.ErrNotFound
+	}
+	return nil
 }
 
 func (r *categoryRepository) Delete(ctx context.Context, category *domain.Category) error {
 	query := `
 		UPDATE categories
-		SET is_active = false, deleted_at = $1
+		SET 
+			is_active = false, 
+			deleted_at = $1
 		WHERE id = $2
 	`
-	_, err := r.db.ExecContext(ctx, query, category.DeletedAt, category.ID)
-	return err
+	ct, err := r.db.Exec(ctx, query, category.DeletedAt, category.ID)
+	if err != nil {
+		return mapPgxError(err)
+	}
+	if ct.RowsAffected() == 0 {
+		return repository.ErrNotFound
+	}
+	return nil
 }
