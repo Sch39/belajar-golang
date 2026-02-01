@@ -1,3 +1,4 @@
+### Create
 POST http://localhost:8080/api/categories
 Content-Type: application/json
 Accept: application/json
@@ -7,18 +8,18 @@ Accept: application/json
     "description": "Berisi kopi-kopi pilihan."
 }
 
-###
+### Read All
 GET http://localhost:8080/api/categories
 Accept: application/json
 
 ###
-@CATEGORY_ID = 9c4c0934-48a0-4d19-9307-e899373a17f7
+@CATEGORY_ID = c4a45d54-bdc6-4783-91db-3acf9fcf415b
 
-###
+### Read One
 GET http://localhost:8080/api/categories/{{CATEGORY_ID}}
 Accept: application/json
 
-###
+### Update
 PUT http://localhost:8080/api/categories/{{CATEGORY_ID}}
 Content-Type: application/json
 Accept: application/json
@@ -28,6 +29,6 @@ Accept: application/json
     "description": "Berisi kopi"
 }
 
-###
+### Delete
 DELETE http://localhost:8080/api/categories/{{CATEGORY_ID}}
 Accept: application/json
