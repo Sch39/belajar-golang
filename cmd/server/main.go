@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"sch.dev/my-kasir-gw/internal/category"
@@ -71,6 +72,9 @@ func main() {
 			"timestamp": time.Now().Format(time.RFC3339),
 		})
 	}))
+
+	// Metrics
+	mux.Handle("/metrics", promhttp.Handler())
 
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 	server := &http.Server{
