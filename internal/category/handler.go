@@ -170,7 +170,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 // @Tags         categories
 // @Produce      json
 // @Param        id   path      string  true  "Category ID" example(550e8400-e29b-41d4-a716-446655440000)
-// @Success      200  {object}  category.BaseSuccessResponse "Success deleted"
+// @Success      204  "Category deleted"
 // @Failure      404  {object}  category.CategoryNotFoundResponse "Category Not Found"
 // @Failure      500  {object}  category.InternalServerErrorResponse "Internal server error"
 // @Router       /api/categories/{id} [delete]

@@ -3,20 +3,16 @@
 package category
 
 // success responses
-type BaseSuccessResponse struct {
-	Success bool   `json:"success" example:"true"`
-	Message string `json:"message" example:"Category deleted successfully"`
-}
 
 type CategorySuccessResponse struct {
-	Success bool   `json:"success" example:"true"`
-	Message string `json:"message" example:"Operation completed successfully"`
+	Success bool             `json:"success" example:"true"`
+	Message string           `json:"message" example:"Operation completed successfully"`
 	Data    categoryResponse `json:"data"`
 }
 
 type CategoryListSuccessResponse struct {
-	Success bool   `json:"success" example:"true"`
-	Message string `json:"message" example:"Operation completed successfully"`
+	Success bool               `json:"success" example:"true"`
+	Message string             `json:"message" example:"Operation completed successfully"`
 	Data    []categoryResponse `json:"data"`
 }
 

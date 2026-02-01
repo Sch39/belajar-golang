@@ -1,14 +1,5 @@
 basePath: /
 definitions:
-  internal_category.BaseSuccessResponse:
-    properties:
-      message:
-        example: Category deleted successfully
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
   internal_category.CategoryListSuccessResponse:
     properties:
       data:
@@ -208,6 +199,10 @@ definitions:
     type: object
   internal_product.productResponse:
     properties:
+      category_id:
+        type: string
+      created_at:
+        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -220,9 +215,14 @@ definitions:
       stock:
         example: 10
         type: integer
+      updated_at:
+        type: string
     type: object
   internal_product.upsertRequest:
     properties:
+      category_id:
+        example: pohon-sawit-0001
+        type: string
       name:
         example: Kopi Susu Gula Aren
         type: string
@@ -235,6 +235,7 @@ definitions:
         minimum: 0
         type: integer
     required:
+    - category_id
     - name
     - price
     - stock
@@ -308,10 +309,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: Success deleted
-          schema:
-            $ref: '#/definitions/internal_category.BaseSuccessResponse'
+        "204":
+          description: Category deleted
         "404":
           description: Category Not Found
           schema:

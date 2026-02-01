@@ -216,11 +216,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Success deleted",
-                        "schema": {
-                            "$ref": "#/definitions/internal_category.BaseSuccessResponse"
-                        }
+                    "204": {
+                        "description": "Category deleted"
                     },
                     "404": {
                         "description": "Category Not Found",
@@ -461,19 +458,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "internal_category.BaseSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "Category deleted successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
         "internal_category.CategoryListSuccessResponse": {
             "type": "object",
             "properties": {
@@ -758,6 +742,12 @@ const docTemplate = `{
         "internal_product.productResponse": {
             "type": "object",
             "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -773,17 +763,25 @@ const docTemplate = `{
                 "stock": {
                     "type": "integer",
                     "example": 10
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
         "internal_product.upsertRequest": {
             "type": "object",
             "required": [
+                "category_id",
                 "name",
                 "price",
                 "stock"
             ],
             "properties": {
+                "category_id": {
+                    "type": "string",
+                    "example": "pohon-sawit-0001"
+                },
                 "name": {
                     "type": "string",
                     "example": "Kopi Susu Gula Aren"
