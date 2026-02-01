@@ -91,7 +91,7 @@ func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Tags         products
 // @Produce      json
 // @Param        id   path      string  true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
-// @Success      200  {object}  product.ProductSuccessResponse
+// @Success      200  {object}  product.ProductDetailSuccessResponse
 // @Failure      404  {object}  product.ProductNotFoundResponse "Product Not Found"
 // @Failure      500  {object}  product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products/{id} [get]
@@ -166,7 +166,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 // @Tags         products
 // @Produce      json
 // @Param        id   path      string  true  "Product ID" example(550e8400-e29b-41d4-a716-446655440000)
-// @Success      200  {object}  product.BaseSuccessResponse "Success deleted"
+// @Success      204  "Product deleted"
 // @Failure      404  {object}  product.ProductNotFoundResponse "Product Not Found"
 // @Failure      500  {object}  product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products/{id} [delete]

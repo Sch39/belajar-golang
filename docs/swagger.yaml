@@ -142,6 +142,17 @@ definitions:
         example: false
         type: boolean
     type: object
+  internal_product.ProductDetailSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_product.productDetailResponse'
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
   internal_product.ProductNotFoundResponse:
     properties:
       error_code:
@@ -197,11 +208,27 @@ definitions:
         example: false
         type: boolean
     type: object
-  internal_product.productResponse:
+  internal_product.categoryResponse:
     properties:
+      description:
+        example: Aneka minuman segar
+        type: string
+      id:
+        example: 9825b44a-101f-4c6e-8d8a-675204481359
+        type: string
+      name:
+        example: Minuman
+        type: string
+    type: object
+  internal_product.productDetailResponse:
+    properties:
+      category:
+        $ref: '#/definitions/internal_product.categoryResponse'
       category_id:
+        example: 9825b44a-101f-4c6e-8d8a-675204481359
         type: string
       created_at:
+        example: "2023-01-01T12:00:00Z"
         type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
@@ -216,12 +243,37 @@ definitions:
         example: 10
         type: integer
       updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  internal_product.productResponse:
+    properties:
+      category_id:
+        example: 9825b44a-101f-4c6e-8d8a-675204481359
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Kopi Susu Gula Aren
+        type: string
+      price:
+        example: 15000
+        type: integer
+      stock:
+        example: 10
+        type: integer
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
         type: string
     type: object
   internal_product.upsertRequest:
     properties:
       category_id:
-        example: pohon-sawit-0001
+        example: 9825b44a-101f-4c6e-8d8a-675204481359
         type: string
       name:
         example: Kopi Susu Gula Aren
@@ -485,7 +537,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_product.ProductSuccessResponse'
+            $ref: '#/definitions/internal_product.ProductDetailSuccessResponse'
         "404":
           description: Product Not Found
           schema:

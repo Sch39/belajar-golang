@@ -327,7 +327,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_product.ProductSuccessResponse"
+                            "$ref": "#/definitions/internal_product.ProductDetailSuccessResponse"
                         }
                     },
                     "404": {
@@ -653,6 +653,22 @@
                 }
             }
         },
+        "internal_product.ProductDetailSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_product.productDetailResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "internal_product.ProductNotFoundResponse": {
             "type": "object",
             "properties": {
@@ -732,14 +748,36 @@
                 }
             }
         },
-        "internal_product.productResponse": {
+        "internal_product.categoryResponse": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Aneka minuman segar"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "9825b44a-101f-4c6e-8d8a-675204481359"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Minuman"
+                }
+            }
+        },
+        "internal_product.productDetailResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/internal_product.categoryResponse"
+                },
                 "category_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "9825b44a-101f-4c6e-8d8a-675204481359"
                 },
                 "created_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
                 },
                 "id": {
                     "type": "string",
@@ -758,7 +796,41 @@
                     "example": 10
                 },
                 "updated_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "internal_product.productResponse": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string",
+                    "example": "9825b44a-101f-4c6e-8d8a-675204481359"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Kopi Susu Gula Aren"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 15000
+                },
+                "stock": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
                 }
             }
         },
@@ -773,7 +845,7 @@
             "properties": {
                 "category_id": {
                     "type": "string",
-                    "example": "pohon-sawit-0001"
+                    "example": "9825b44a-101f-4c6e-8d8a-675204481359"
                 },
                 "name": {
                     "type": "string",

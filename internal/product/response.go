@@ -8,15 +8,15 @@ type productResponse struct {
 	Name       string    `json:"name" example:"Kopi Susu Gula Aren"`
 	Price      int64     `json:"price" example:"15000"`
 	Stock      int       `json:"stock" example:"10"`
-	CategoryID string    `json:"category_id"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	CategoryID string    `json:"category_id" example:"9825b44a-101f-4c6e-8d8a-675204481359"`
+	CreatedAt  time.Time `json:"created_at" example:"2023-01-01T12:00:00Z"`
+	UpdatedAt  time.Time `json:"updated_at" example:"2023-01-01T12:00:00Z"`
 }
 
 type categoryResponse struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          string `json:"id" example:"9825b44a-101f-4c6e-8d8a-675204481359"`
+	Name        string `json:"name" example:"Minuman"`
+	Description string `json:"description" example:"Aneka minuman segar"`
 }
 
 type productDetailResponse struct {

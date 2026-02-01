@@ -13,6 +13,12 @@ type ProductSuccessResponse struct {
 	Data    productResponse `json:"data"`
 }
 
+type ProductDetailSuccessResponse struct {
+	Success bool                  `json:"success" example:"true"`
+	Message string                `json:"message" example:"Operation completed successfully"`
+	Data    productDetailResponse `json:"data"`
+}
+
 type ProductsSuccessResponse struct {
 	Success bool              `json:"success" example:"true"`
 	Message string            `json:"message" example:"Operation completed successfully"`
