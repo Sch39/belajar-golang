@@ -3,4 +3,8 @@ package category
 
 import "errors"
 
-var ErrNotFound = errors.New("Category not found")
+var (
+	ErrCategoryNotFound = errors.New("category not found")
+	ErrInvalidInput     = errors.New("invalid category input")
+	ErrConflict         = errors.New("category conflict")
+)
