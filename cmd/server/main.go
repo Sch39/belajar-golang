@@ -30,27 +30,27 @@ func main() {
 	if dsn == "" {
 		log.Fatal("DATABASE_URL is required")
 	}
-	conn, err := database.NewPostgresConn(dsn)
+	pool, err := database.NewPostgresConn(dsn)
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 		return
 	}
 
 	// Migration
-	if err := database.MigratePostgres(conn); err != nil {
+	if err := database.MigratePostgres(pool); err != nil {
 		log.Fatal("Database migration failed:", err)
 		return
 	}
 
-	// Product
-	productRepo := postgres.NewProductRepository(conn)
-	productService := product.NewService(productRepo)
-	productHandler := product.NewHandler(productService)
-
 	// Category
-	categoryRepo := postgres.NewCategoryRepository(conn)
+	categoryRepo := postgres.NewCategoryRepository(pool)
 	categoryService := category.NewService(categoryRepo)
 	categoryHandler := category.NewHandler(categoryService)
+
+	// Product
+	productRepo := postgres.NewProductRepository(pool)
+	productService := product.NewService(productRepo, categoryRepo)
+	productHandler := product.NewHandler(productService)
 
 	// Mux
 	mux := http.NewServeMux()

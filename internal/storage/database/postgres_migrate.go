@@ -1,38 +1,49 @@
 // internal/storage/database/postgres_migrate.go
-
 package database
 
 import (
-	"database/sql"
+	"context"
 	"embed"
 	"fmt"
 	"log"
 	"path"
 	"sort"
 	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 //go:embed migrations/postgres/*.sql
 var postgresMigrationFiles embed.FS
 
-func MigratePostgres(db *sql.DB) error {
+func MigratePostgres(pool *pgxpool.Pool) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
 	const migrationPath = "migrations/postgres"
 	const migrationTable = "migrations"
 
-	createMigrationTableQuery := fmt.Sprintf(`
+	// 1. ensure migration table
+	createTableSQL := fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			id SERIAL PRIMARY KEY,
+			id BIGSERIAL PRIMARY KEY,
 			filename TEXT NOT NULL UNIQUE,
 			applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		);
 	`, migrationTable)
 
-	if _, err := db.Exec(createMigrationTableQuery); err != nil {
-		return err
+	if _, err := pool.Exec(ctx, createTableSQL); err != nil {
+		return fmt.Errorf("create migration table failed: %w", err)
 	}
 
-	applied := make(map[string]bool)
-	rows, err := db.Query(fmt.Sprintf(`SELECT filename FROM %s`, migrationTable))
+	// 2. load applied migrations
+	applied := map[string]bool{}
+
+	rows, err := pool.Query(
+		ctx,
+		fmt.Sprintf(`SELECT filename FROM %s`, migrationTable),
+	)
 	if err != nil {
 		return err
 	}
@@ -46,6 +57,11 @@ func MigratePostgres(db *sql.DB) error {
 		applied[filename] = true
 	}
 
+	if rows.Err() != nil {
+		return rows.Err()
+	}
+
+	// 3. read migration files
 	entries, err := postgresMigrationFiles.ReadDir(migrationPath)
 	if err != nil {
 		return err
@@ -53,11 +69,11 @@ func MigratePostgres(db *sql.DB) error {
 
 	var pending []string
 	for _, entry := range entries {
-		name := entry.Name()
-		if !entry.IsDir() && strings.HasSuffix(name, ".sql") {
-			if !applied[name] {
-				pending = append(pending, name)
-			}
+		if entry.IsDir() {
+			continue
+		}
+		if strings.HasSuffix(entry.Name(), ".sql") && !applied[entry.Name()] {
+			pending = append(pending, entry.Name())
 		}
 	}
 
@@ -70,6 +86,7 @@ func MigratePostgres(db *sql.DB) error {
 
 	log.Printf("[migrate] found %d pending migrations\n", len(pending))
 
+	// 4. apply migrations (transaction per file)
 	for _, name := range pending {
 		fullPath := path.Join(migrationPath, name)
 
@@ -78,30 +95,30 @@ func MigratePostgres(db *sql.DB) error {
 			return err
 		}
 
-		tx, err := db.Begin()
+		tx, err := pool.Begin(ctx)
 		if err != nil {
 			return err
 		}
 
-		if _, err := tx.Exec(string(sqlBytes)); err != nil {
-			tx.Rollback()
-			log.Printf("[migrate] ❌ %s failed: %v\n", name, err)
-			return err
+		if _, err := tx.Exec(ctx, string(sqlBytes)); err != nil {
+			_ = tx.Rollback(ctx)
+			return fmt.Errorf("migration %s failed: %w", name, err)
 		}
 
 		if _, err := tx.Exec(
+			ctx,
 			fmt.Sprintf(`INSERT INTO %s (filename) VALUES ($1)`, migrationTable),
 			name,
 		); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback(ctx)
 			return err
 		}
 
-		if err := tx.Commit(); err != nil {
+		if err := tx.Commit(ctx); err != nil {
 			return err
 		}
 
-		log.Printf("[migrate] ✅ %s applied successfully\n", name)
+		log.Printf("[migrate] ✅ %s applied\n", name)
 	}
 
 	log.Println("[migrate] postgres migration completed")

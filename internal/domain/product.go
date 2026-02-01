@@ -2,10 +2,13 @@
 package domain
 
 type Product struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Price int64    `json:"price"`
-	Stock int    `json:"stock"`
+	ID    string
+	Name  string
+	Price int64
+	Stock int
+
+	CategoryID string
+	Category   *Category
 
 	Timestamp
 	SoftDelete

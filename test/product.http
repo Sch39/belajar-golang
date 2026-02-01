@@ -1,3 +1,9 @@
+### ENV
+@CATEGORY_ID = abf77a4a-0fec-4760-be10-3e8f929cccfe
+@PRODUCT_ID = d03e36df-9b61-4aed-acc3-73c4180b9280
+
+
+### Create
 POST http://localhost:8080/api/products
 Content-Type: application/json
 Accept: application/json
@@ -5,15 +11,13 @@ Accept: application/json
 {
     "name": "Kopi Susu Gula Aren",
     "price": 20000,
-    "stock": 10
+    "stock": 10,
+    "category_id": "{{CATEGORY_ID}}"
 }
 
 ###
 GET http://localhost:8080/api/products
 Accept: application/json
-
-###
-@PRODUCT_ID = 872fc24d-0aab-4d37-ae08-b40e41c03f2e
 
 ###
 GET http://localhost:8080/api/products/{{PRODUCT_ID}}
@@ -27,7 +31,8 @@ Accept: application/json
 {
     "name": "Oat Milk Latte",
     "price": 24000,
-    "stock": 10
+    "stock": 10,
+    "category_id": "{{CATEGORY_ID}}"
 }
 
 ###

@@ -3,76 +3,183 @@ package product
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"sch.dev/my-kasir-gw/internal/category"
 	"sch.dev/my-kasir-gw/internal/domain"
+	"sch.dev/my-kasir-gw/internal/storage/repository"
 )
 
+type CreateProductInput struct {
+	Name       string
+	Price      int64
+	Stock      int
+	CategoryID string
+}
+
+type UpsertProductInput struct {
+	Name       string
+	Price      int64
+	Stock      int
+	CategoryID string
+}
+
+type CategoryOutput struct {
+	ID          string
+	Name        string
+	Description string
+}
+
+type ProductOutput struct {
+	ID         string
+	Name       string
+	Price      int64
+	Stock      int
+	CategoryID string
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type ProductDetailOutput struct {
+	ProductOutput
+	Category *CategoryOutput
+}
+
 type Service interface {
-	Add(ctx context.Context, product *domain.Product) error
-	GetAll(ctx context.Context) ([]domain.Product, error)
-	GetByID(ctx context.Context, id string) (*domain.Product, error)
-	Update(ctx context.Context, product *domain.Product) error
+	Add(ctx context.Context, product UpsertProductInput) (*ProductOutput, error)
+	GetAll(ctx context.Context) ([]ProductOutput, error)
+	GetByID(ctx context.Context, id string) (*ProductDetailOutput, error)
+	Update(ctx context.Context, id string, product UpsertProductInput) (*ProductOutput, error)
 	Delete(ctx context.Context, id string) error
 }
 
 type service struct {
-	repo Repository
+	productRepo  Repository
+	categoryRepo category.Repository
 }
 
-func NewService(r Repository) Service {
-	return &service{repo: r}
-}
-
-func (s *service) Add(ctx context.Context, product *domain.Product) error {
-	uuidValue, err := uuid.NewRandom()
-	if err != nil {
-		return err
+func NewService(
+	productRepo Repository,
+	categoryRepo category.Repository,
+) Service {
+	return &service{
+		productRepo:  productRepo,
+		categoryRepo: categoryRepo,
 	}
-	now := time.Now().UTC()
-	product.CreatedAt = now
-	product.UpdatedAt = now
-	product.IsActive = true
-	product.ID = uuidValue.String()
-	return s.repo.Create(ctx, product)
 }
 
-func (s *service) GetAll(ctx context.Context) ([]domain.Product, error) {
-	return s.repo.FindAll(ctx)
-}
+func (s *service) Add(ctx context.Context, input UpsertProductInput) (*ProductOutput, error) {
+	_, err := s.categoryRepo.FindByID(ctx, input.CategoryID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, ErrCategoryNotFound
+		}
+		return nil, err
+	}
 
-func (s *service) GetByID(ctx context.Context, id string) (*domain.Product, error) {
-	product, err := s.repo.FindByID(ctx, id)
+	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
-	if product == nil {
-		return nil, ErrNotFound
-	}
+	now := time.Now().UTC()
 
-	return product, nil
+	product := &domain.Product{
+		ID:         id.String(),
+		Name:       input.Name,
+		Price:      input.Price,
+		Stock:      input.Stock,
+		CategoryID: input.CategoryID,
+		Timestamp: domain.Timestamp{
+			CreatedAt: now,
+			UpdatedAt: now,
+		},
+		SoftDelete: domain.SoftDelete{
+			IsActive: true,
+		},
+	}
+	if err := mapRepoError(s.productRepo.Create(ctx, product)); err != nil {
+		return nil, err
+	}
+	return mapToProductOutput(*product), nil
 }
 
-func (s *service) Update(ctx context.Context, product *domain.Product) error {
-	_, err := s.GetByID(ctx, product.ID)
+func (s *service) GetAll(ctx context.Context) ([]ProductOutput, error) {
+	products, err := s.productRepo.FindAll(ctx)
 	if err != nil {
-		return err
+		return nil, mapRepoError(err)
 	}
-	now := time.Now().UTC()
-	product.UpdatedAt = now
-	return s.repo.Update(ctx, product)
+	var productOutputs []ProductOutput
+	for _, p := range products {
+		productOut := mapToProductOutput(p)
+		productOutputs = append(productOutputs, *productOut)
+	}
+	return productOutputs, nil
+}
+
+func (s *service) GetByID(ctx context.Context, id string) (*ProductDetailOutput, error) {
+	product, err := s.productRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, mapRepoError(err)
+	}
+	if product == nil {
+		return nil, ErrProductNotFound
+	}
+
+	category, err := s.categoryRepo.FindByID(ctx, product.CategoryID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, ErrCategoryNotFound
+		}
+		return nil, err
+	}
+	return mapToProductDetailOutput(*product, *category), nil
+}
+
+func (s *service) Update(ctx context.Context, id string, product UpsertProductInput) (*ProductOutput, error) {
+	existing, err := s.productRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, mapRepoError(err)
+	}
+	if existing == nil {
+		return nil, ErrProductNotFound
+	}
+
+	_, err = s.categoryRepo.FindByID(ctx, product.CategoryID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, ErrCategoryNotFound
+		}
+		return nil, err
+	}
+
+	existing.Name = product.Name
+	existing.Price = product.Price
+	existing.Stock = product.Stock
+	existing.CategoryID = product.CategoryID
+	existing.UpdatedAt = time.Now().UTC()
+
+	if err := mapRepoError(s.productRepo.Update(ctx, existing)); err != nil {
+		return nil, err
+	}
+
+	return mapToProductOutput(*existing), nil
 }
 
 func (s *service) Delete(ctx context.Context, id string) error {
-	p, err := s.GetByID(ctx, id)
+	product, err := s.productRepo.FindByID(ctx, id)
 	if err != nil {
-		return err
+		return mapRepoError(err)
+	}
+	if product == nil {
+		return ErrProductNotFound
 	}
 
 	now := time.Now().UTC()
-	p.IsActive = false
-	p.DeletedAt = &now
+	product.IsActive = false
+	product.DeletedAt = &now
 
-	return s.repo.Delete(ctx, p)
+	return mapRepoError(s.productRepo.Delete(ctx, product))
 }

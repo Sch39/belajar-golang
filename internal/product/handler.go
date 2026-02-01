@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"sch.dev/my-kasir-gw/internal/domain"
 	"sch.dev/my-kasir-gw/internal/pkg/apperror"
 	"sch.dev/my-kasir-gw/internal/pkg/rest"
 	"sch.dev/my-kasir-gw/internal/pkg/validator"
@@ -47,19 +46,21 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product := &domain.Product{
-		Name:  req.Name,
-		Price: *req.Price,
-		Stock: *req.Stock,
+	input := UpsertProductInput{
+		Name:       req.Name,
+		Price:      *req.Price,
+		Stock:      *req.Stock,
+		CategoryID: req.CategoryID,
 	}
 
-	if err := h.service.Add(r.Context(), product); err != nil {
-		code := apperror.ErrInternal
+	result, err := h.service.Add(r.Context(), input)
+	if err != nil {
+		code := mapServiceError(err)
 		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		return
 	}
 
-	rest.JSON(w, http.StatusCreated, rest.Success(toResponse(product), "Product created successfully"))
+	rest.JSON(w, http.StatusCreated, rest.Success(mapToProductResponse(*result), "Product created successfully"))
 }
 
 // GetAll godoc
@@ -73,13 +74,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.service.GetAll(r.Context())
 	if err != nil {
-		code := apperror.ErrInternal
+		code := mapServiceError(err)
 		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		return
 	}
 	resp := []productResponse{}
 	for _, p := range products {
-		resp = append(resp, toResponse(&p))
+		resp = append(resp, *mapToProductResponse(p))
 	}
 	rest.JSON(w, http.StatusOK, rest.Success(resp))
 }
@@ -98,17 +99,17 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request, id string) {
 	product, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
 		switch err {
-		case ErrNotFound:
+		case ErrProductNotFound:
 			code := apperror.ErrProductNotFound
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Product not found", nil))
 			return
 		default:
-			code := apperror.ErrInternal
+			code := mapServiceError(err)
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 			return
 		}
 	}
-	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product)))
+	rest.JSON(w, http.StatusOK, rest.Success(mapToProductDetailResponse(*product)))
 }
 
 // Update godoc
@@ -137,25 +138,26 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Validation error", rest.ValidationError(err)))
 		return
 	}
-	product := &domain.Product{
-		ID:    id,
-		Name:  req.Name,
-		Price: *req.Price,
-		Stock: *req.Stock,
+	input := UpsertProductInput{
+		Name:       req.Name,
+		Price:      *req.Price,
+		Stock:      *req.Stock,
+		CategoryID: req.CategoryID,
 	}
-	if err := h.service.Update(r.Context(), product); err != nil {
+	result, err := h.service.Update(r.Context(), id, input)
+	if err != nil {
 		switch err {
-		case ErrNotFound:
+		case ErrProductNotFound:
 			code := apperror.ErrProductNotFound
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Product not found", nil))
 			return
 		default:
-			code := apperror.ErrInternal
+			code := mapServiceError(err)
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 			return
 		}
 	}
-	rest.JSON(w, http.StatusOK, rest.Success(toResponse(product), "Product updated successfully"))
+	rest.JSON(w, http.StatusOK, rest.Success(mapToProductResponse(*result), "Product updated successfully"))
 }
 
 // Delete godoc
@@ -171,24 +173,26 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request, id string) {
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	if err := h.service.Delete(r.Context(), id); err != nil {
 		switch err {
-		case ErrNotFound:
+		case ErrProductNotFound:
 			code := apperror.ErrProductNotFound
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, "Product not found", nil))
 			return
 		default:
-			code := apperror.ErrInternal
+			code := mapServiceError(err)
 			rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 			return
 		}
 	}
-	rest.JSON(w, http.StatusOK, rest.Success(nil, "Product deleted successfully"))
+	rest.JSON(w, http.StatusNoContent, rest.Success(nil))
 }
 
-func toResponse(p *domain.Product) productResponse {
-	return productResponse{
-		ID:    p.ID,
-		Name:  p.Name,
-		Price: p.Price,
-		Stock: p.Stock,
+func mapServiceError(err error) apperror.ErrorCode {
+	switch err {
+	case ErrProductNotFound:
+		return apperror.ErrProductNotFound
+	case ErrCategoryNotFound:
+		return apperror.ErrCategoryNotFound
+	default:
+		return apperror.ErrInternal
 	}
 }
