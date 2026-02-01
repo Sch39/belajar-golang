@@ -12,13 +12,6 @@ import (
 	"sch.dev/my-kasir-gw/internal/storage/repository"
 )
 
-type CreateProductInput struct {
-	Name       string
-	Price      int64
-	Stock      int
-	CategoryID string
-}
-
 type UpsertProductInput struct {
 	Name       string
 	Price      int64
