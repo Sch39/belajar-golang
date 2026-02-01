@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"sch.dev/my-kasir-gw/internal/domain"
+	"sch.dev/my-kasir-gw/internal/pkg/apperror"
 	"sch.dev/my-kasir-gw/internal/storage/repository"
 )
 
@@ -22,6 +23,17 @@ func mapRepoError(err error) error {
 	default:
 		return err
 
+	}
+}
+
+func mapServiceError(err error) apperror.ErrorCode {
+	switch err {
+	case ErrProductNotFound:
+		return apperror.ErrProductNotFound
+	case ErrCategoryNotFound:
+		return apperror.ErrCategoryNotFound
+	default:
+		return apperror.ErrInternal
 	}
 }
 

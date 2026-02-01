@@ -185,14 +185,3 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request, id string) {
 	}
 	rest.JSON(w, http.StatusNoContent, rest.Success(nil))
 }
-
-func mapServiceError(err error) apperror.ErrorCode {
-	switch err {
-	case ErrProductNotFound:
-		return apperror.ErrProductNotFound
-	case ErrCategoryNotFound:
-		return apperror.ErrCategoryNotFound
-	default:
-		return apperror.ErrInternal
-	}
-}
