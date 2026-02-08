@@ -16,6 +16,7 @@ import (
 	"sch.dev/my-kasir-gw/internal/product"
 	"sch.dev/my-kasir-gw/internal/storage/database"
 	"sch.dev/my-kasir-gw/internal/storage/repository/postgres"
+	"sch.dev/my-kasir-gw/internal/transaction"
 
 	_ "sch.dev/my-kasir-gw/docs"
 )
@@ -53,12 +54,18 @@ func main() {
 	productService := product.NewService(productRepo, categoryRepo)
 	productHandler := product.NewHandler(productService)
 
+	// Transaction
+	transactionRepo := postgres.NewTransactionRepository(pool)
+	transactionService := transaction.NewService(transactionRepo, productRepo)
+	transactionHandler := transaction.NewHandler(transactionService)
+
 	// Mux
 	mux := http.NewServeMux()
 
 	// Register route
 	productHandler.RegisterRoutes(mux)
 	categoryHandler.RegisterRoutes(mux)
+	transactionHandler.RegisterRoutes(mux)
 
 	// Front End
 	mux.Handle("/", http.FileServer(http.Dir("./public")))

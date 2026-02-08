@@ -1,0 +1,39 @@
+### ENV
+@PRODUCT_ID = 7c2a716d-1e0a-4a9e-9e64-dc575e3c1f20
+
+
+POST http://localhost:8080/api/transactions/checkout
+Content-Type: application/json
+Accept: application/json
+
+{
+    "items": [
+        {
+            "product_id": "{{PRODUCT_ID}}",
+            "quantity": 2
+        }
+    ]
+}
+
+### Checkout (Validation Error - Empty Items)
+POST http://localhost:8080/api/transactions/checkout
+Content-Type: application/json
+Accept: application/json
+
+{
+    "items": []
+}
+
+### Checkout (Validation Error - Invalid Quantity)
+POST http://localhost:8080/api/transactions/checkout
+Content-Type: application/json
+Accept: application/json
+
+{
+    "items": [
+        {
+            "product_id": "{{PRODUCT_ID}}",
+            "quantity": 0
+        }
+    ]
+}

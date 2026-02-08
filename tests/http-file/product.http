@@ -1,5 +1,5 @@
 ### ENV
-@CATEGORY_ID = abf77a4a-0fec-4760-be10-3e8f929cccfe
+@CATEGORY_ID = 2c97d117-fb7d-411b-b66f-03035cd1efc3
 @PRODUCT_ID = d03e36df-9b61-4aed-acc3-73c4180b9280
 
 
@@ -9,7 +9,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-    "name": "Kopi Susu Gula Aren",
+    "name": "Kopi Susu Latte",
     "price": 20000,
     "stock": 10,
     "category_id": "{{CATEGORY_ID}}"

@@ -15,6 +15,8 @@ const (
 
 	// category errors
 	ErrCategoryNotFound ErrorCode = "CATEGORY_NOT_FOUND"
+
+	ErrConflict ErrorCode = "CONFLICT"
 )
 
 func (e ErrorCode) ToHttpStatus() int {
@@ -23,6 +25,8 @@ func (e ErrorCode) ToHttpStatus() int {
 		return 400
 	case ErrCodeNotFound, ErrProductNotFound, ErrCategoryNotFound:
 		return 404
+	case ErrConflict:
+		return 409
 	case ErrValidation:
 		return 422
 	default:
