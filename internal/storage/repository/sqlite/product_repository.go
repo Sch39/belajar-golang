@@ -6,16 +6,15 @@ import (
 	"database/sql"
 
 	"sch.dev/my-kasir-gw/internal/domain"
-	"sch.dev/my-kasir-gw/internal/product"
 )
 
 type productRepository struct {
 	db *sql.DB
 }
 
-func NewProductRepository(db *sql.DB) product.Repository {
-	return &productRepository{db: db}
-}
+// func NewProductRepository(db *sql.DB) product.Repository {
+// 	 return &productRepository{db: db}
+// }
 
 // Implement the methods of ProductRepository interface
 func (r *productRepository) Create(ctx context.Context, product *domain.Product) error {
@@ -25,9 +24,9 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 	return err
 }
 
-func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, error) {
-	query := "SELECT id, name, price, stock, created_at, updated_at FROM products WHERE is_active = 1"
-	rows, err := r.db.QueryContext(ctx, query)
+func (r *productRepository) FindAll(ctx context.Context, query string) ([]domain.Product, error) {
+	query = "SELECT id, name, price, stock, created_at, updated_at FROM products WHERE is_active = 1 AND name LIKE '%' || ? || '%'"
+	rows, err := r.db.QueryContext(ctx, query, query)
 
 	if err != nil {
 		return nil, err

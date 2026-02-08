@@ -16,7 +16,7 @@ Accept: application/json
 }
 
 ###
-GET http://localhost:8080/api/products
+GET http://localhost:8080/api/products?query=kopi&page=1&limit=10
 Accept: application/json
 
 ###

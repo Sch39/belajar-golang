@@ -8,10 +8,18 @@ import (
 	"sch.dev/my-kasir-gw/internal/pkg/apperror"
 )
 
+type Pagination struct {
+	Total       int `json:"total" example:"100"`
+	TotalPage   int `json:"total_page" example:"10"`
+	CurrentPage int `json:"current_page" example:"1"`
+	Limit       int `json:"limit" example:"10"`
+}
+
 type SuccessResponse struct {
-	Success bool        `json:"success" example:"true"`
-	Message string      `json:"message,omitempty" example:"Operation completed successfully"`
-	Data    interface{} `json:"data,omitempty"`
+	Success    bool        `json:"success" example:"true"`
+	Message    string      `json:"message,omitempty" example:"Operation completed successfully"`
+	Data       interface{} `json:"data,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 type FailResponse struct {
@@ -36,6 +44,19 @@ func Success(data interface{}, message ...string) SuccessResponse {
 		Success: true,
 		Data:    data,
 		Message: msg,
+	}
+}
+
+func SuccessWithPagination(data interface{}, pagination Pagination, message ...string) SuccessResponse {
+	msg := "Operation completed successfully"
+	if len(message) > 0 {
+		msg = message[0]
+	}
+	return SuccessResponse{
+		Success:    true,
+		Data:       data,
+		Message:    msg,
+		Pagination: &pagination,
 	}
 }
 

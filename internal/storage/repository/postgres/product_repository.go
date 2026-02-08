@@ -51,13 +51,15 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 	return nil
 }
 
-func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, error) {
-	query := `
+func (r *productRepository) FindAll(ctx context.Context, query string, skip, limit int) ([]domain.Product, error) {
+	q := `
 		SELECT id, name, price, stock, created_at, updated_at, category_id
 		FROM products
 		WHERE is_active = true
+		AND name ILIKE $1
+		LIMIT $2 OFFSET $3
 	`
-	rows, err := r.pool.Query(ctx, query)
+	rows, err := r.pool.Query(ctx, q, "%"+query+"%", limit, skip)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +83,21 @@ func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, erro
 	}
 
 	return products, rows.Err()
+}
+
+func (r *productRepository) Count(ctx context.Context, query string) (int, error) {
+	q := `
+		SELECT COUNT(id)
+		FROM products
+		WHERE is_active = true
+		AND name ILIKE $1
+	`
+	var count int
+	err := r.pool.QueryRow(ctx, q, "%"+query+"%").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func (r *productRepository) FindByID(ctx context.Context, id string) (*domain.Product, error) {

@@ -4,6 +4,7 @@ package product
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"sch.dev/my-kasir-gw/internal/pkg/apperror"
 	"sch.dev/my-kasir-gw/internal/pkg/rest"
@@ -65,24 +66,48 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 // GetAll godoc
 // @Summary      Get all products
-// @Description  Retrieve a list of all products
+// @Description  Retrieve a list of all products with pagination
 // @Tags         products
 // @Produce      json
+// @Param        query    query     string  false  "Search query by name"
+// @Param        page     query     int     false  "Page number (default 1)"
+// @Param        limit    query     int     false  "Items per page (default 10)"
 // @Success      200      {object}  product.ProductsSuccessResponse
 // @Failure      500      {object}  product.InternalServerErrorResponse "Internal server error"
 // @Router       /api/products [get]
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
-	products, err := h.service.GetAll(r.Context())
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	query := r.URL.Query().Get("query")
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+
+	products, total, err := h.service.GetAll(r.Context(), query, page, limit)
 	if err != nil {
 		code := mapServiceError(err)
 		rest.JSON(w, code.ToHttpStatus(), rest.Fail(code, err.Error(), nil))
 		return
 	}
+
 	resp := []productResponse{}
 	for _, p := range products {
 		resp = append(resp, *mapToProductResponse(p))
 	}
-	rest.JSON(w, http.StatusOK, rest.Success(resp))
+
+	totalPages := (total + limit - 1) / limit
+	pagination := rest.Pagination{
+		Total:       total,
+		TotalPage:   totalPages,
+		CurrentPage: page,
+		Limit:       limit,
+	}
+
+	rest.JSON(w, http.StatusOK, rest.SuccessWithPagination(resp, pagination))
 }
 
 // GetByID godoc

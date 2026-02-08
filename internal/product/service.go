@@ -43,7 +43,7 @@ type ProductDetailOutput struct {
 
 type Service interface {
 	Add(ctx context.Context, product UpsertProductInput) (*ProductOutput, error)
-	GetAll(ctx context.Context) ([]ProductOutput, error)
+	GetAll(ctx context.Context, query string, page, limit int) ([]ProductOutput, int, error)
 	GetByID(ctx context.Context, id string) (*ProductDetailOutput, error)
 	Update(ctx context.Context, id string, product UpsertProductInput) (*ProductOutput, error)
 	Delete(ctx context.Context, id string) error
@@ -99,17 +99,34 @@ func (s *service) Add(ctx context.Context, input UpsertProductInput) (*ProductOu
 	return mapToProductOutput(*product), nil
 }
 
-func (s *service) GetAll(ctx context.Context) ([]ProductOutput, error) {
-	products, err := s.productRepo.FindAll(ctx)
-	if err != nil {
-		return nil, mapRepoError(err)
+func (s *service) GetAll(ctx context.Context, query string, page, limit int) ([]ProductOutput, int, error) {
+	if page < 1 {
+		page = 1
 	}
+	if limit < 1 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	skip := (page - 1) * limit
+
+	products, err := s.productRepo.FindAll(ctx, query, skip, limit)
+	if err != nil {
+		return nil, 0, mapRepoError(err)
+	}
+
+	total, err := s.productRepo.Count(ctx, query)
+	if err != nil {
+		return nil, 0, mapRepoError(err)
+	}
+
 	var productOutputs []ProductOutput
 	for _, p := range products {
 		productOut := mapToProductOutput(p)
 		productOutputs = append(productOutputs, *productOut)
 	}
-	return productOutputs, nil
+	return productOutputs, total, nil
 }
 
 func (s *service) GetByID(ctx context.Context, id string) (*ProductDetailOutput, error) {
