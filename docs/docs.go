@@ -236,7 +236,7 @@ const docTemplate = `{
         },
         "/api/products": {
             "get": {
-                "description": "Retrieve a list of all products",
+                "description": "Retrieve a list of all products with pagination",
                 "produces": [
                     "application/json"
                 ],
@@ -244,6 +244,26 @@ const docTemplate = `{
                     "products"
                 ],
                 "summary": "Get all products",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query by name",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default 10)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -435,11 +455,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Success deleted",
-                        "schema": {
-                            "$ref": "#/definitions/internal_product.BaseSuccessResponse"
-                        }
+                    "204": {
+                        "description": "Product deleted"
                     },
                     "404": {
                         "description": "Product Not Found",
@@ -451,6 +468,64 @@ const docTemplate = `{
                         "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/internal_product.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/checkout": {
+            "post": {
+                "description": "Process a checkout with a list of items",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Create a new transaction",
+                "parameters": [
+                    {
+                        "description": "Checkout Request Body",
+                        "name": "checkout",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.checkoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.CheckoutSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid JSON body",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.InvalidBodyResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.ProductNotFoundResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or Insufficient stock",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.ValidationErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.InternalServerErrorResponse"
                         }
                     }
                 }
@@ -610,19 +685,6 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 3,
                     "example": "Coffe"
-                }
-            }
-        },
-        "internal_product.BaseSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "Product deleted successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
                 }
             }
         },
@@ -867,6 +929,133 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0,
                     "example": 10
+                }
+            }
+        },
+        "internal_transaction.CheckoutSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_transaction.checkoutResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_transaction.InternalServerErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "INTERNAL_ERROR"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_transaction.InvalidBodyResponse": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "INVALID_PAYLOAD"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Invalid body"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_transaction.ProductNotFoundResponse": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "PRODUCT_NOT_FOUND"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Product not found or inactive"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_transaction.ValidationErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "VALIDATION_ERROR"
+                },
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "items[0].product_id": "required"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Validation error"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_transaction.checkoutItemRequest": {
+            "type": "object",
+            "required": [
+                "product_id",
+                "quantity"
+            ],
+            "properties": {
+                "product_id": {
+                    "type": "string",
+                    "example": "9825b44a-101f-4c6e-8d8a-675204481359"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 2
+                }
+            }
+        },
+        "internal_transaction.checkoutRequest": {
+            "type": "object"
+        },
+        "internal_transaction.checkoutResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "9825b44a-101f-4c6e-8d8a-675204481359"
+                },
+                "total_price": {
+                    "type": "integer",
+                    "example": 1000000
                 }
             }
         }

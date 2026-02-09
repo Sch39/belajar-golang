@@ -109,15 +109,6 @@ definitions:
     required:
     - name
     type: object
-  internal_product.BaseSuccessResponse:
-    properties:
-      message:
-        example: Product deleted successfully
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
   internal_product.InternalServerErrorResponse:
     properties:
       error_code:
@@ -292,6 +283,95 @@ definitions:
     - price
     - stock
     type: object
+  internal_transaction.CheckoutSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_transaction.checkoutResponse'
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_transaction.InternalServerErrorResponse:
+    properties:
+      error_code:
+        example: INTERNAL_ERROR
+        type: string
+      message:
+        example: Internal server error
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_transaction.InvalidBodyResponse:
+    properties:
+      error_code:
+        example: INVALID_PAYLOAD
+        type: string
+      message:
+        example: Invalid body
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_transaction.ProductNotFoundResponse:
+    properties:
+      error_code:
+        example: PRODUCT_NOT_FOUND
+        type: string
+      message:
+        example: Product not found or inactive
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_transaction.ValidationErrorResponse:
+    properties:
+      error_code:
+        example: VALIDATION_ERROR
+        type: string
+      errors:
+        additionalProperties:
+          type: string
+        example:
+          items[0].product_id: required
+        type: object
+      message:
+        example: Validation error
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  internal_transaction.checkoutItemRequest:
+    properties:
+      product_id:
+        example: 9825b44a-101f-4c6e-8d8a-675204481359
+        type: string
+      quantity:
+        example: 2
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  internal_transaction.checkoutRequest:
+    type: object
+  internal_transaction.checkoutResponse:
+    properties:
+      id:
+        example: 9825b44a-101f-4c6e-8d8a-675204481359
+        type: string
+      total_price:
+        example: 1000000
+        type: integer
+    type: object
 info:
   contact: {}
   description: Ini adalah server API untuk aplikasi My Kasir Guweh.
@@ -446,7 +526,20 @@ paths:
       - categories
   /api/products:
     get:
-      description: Retrieve a list of all products
+      description: Retrieve a list of all products with pagination
+      parameters:
+      - description: Search query by name
+        in: query
+        name: query
+        type: string
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Items per page (default 10)
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -507,10 +600,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: Success deleted
-          schema:
-            $ref: '#/definitions/internal_product.BaseSuccessResponse'
+        "204":
+          description: Product deleted
         "404":
           description: Product Not Found
           schema:
@@ -592,4 +683,42 @@ paths:
       summary: Update an existing product
       tags:
       - products
+  /api/transactions/checkout:
+    post:
+      consumes:
+      - application/json
+      description: Process a checkout with a list of items
+      parameters:
+      - description: Checkout Request Body
+        in: body
+        name: checkout
+        required: true
+        schema:
+          $ref: '#/definitions/internal_transaction.checkoutRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_transaction.CheckoutSuccessResponse'
+        "400":
+          description: Invalid JSON body
+          schema:
+            $ref: '#/definitions/internal_transaction.InvalidBodyResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/internal_transaction.ProductNotFoundResponse'
+        "422":
+          description: Validation error or Insufficient stock
+          schema:
+            $ref: '#/definitions/internal_transaction.ValidationErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_transaction.InternalServerErrorResponse'
+      summary: Create a new transaction
+      tags:
+      - transactions
 swagger: "2.0"

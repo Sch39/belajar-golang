@@ -7,5 +7,5 @@ type checkoutItemRequest struct {
 }
 
 type checkoutRequest struct {
-	Items []checkoutItemRequest `json:"items" validate:"required,dive" example:"[]"`
+	Items []checkoutItemRequest `json:"items" validate:"required,min=1,dive" example:"[]"`
 }
