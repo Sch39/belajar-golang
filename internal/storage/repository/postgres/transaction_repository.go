@@ -4,6 +4,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -137,4 +138,44 @@ func (r *transactionRepository) Create(ctx context.Context, tx *domain.Transacti
 	}
 
 	return dbTx.Commit(ctx)
+}
+
+func (r *transactionRepository) GetReport(ctx context.Context, startDate, endDate time.Time) (int64, int64, string, int64, error) {
+	var totalRevenue int64
+	var totalTransaction int64
+	var bestProductName string
+	var bestProductQty int64
+
+	// 1. Get Total Revenue and Total Transaction
+	queryStats := `
+		SELECT COALESCE(SUM(total_price), 0), COUNT(id)
+		FROM transactions
+		WHERE created_at >= $1 AND created_at <= $2
+	`
+	err := r.pool.QueryRow(ctx, queryStats, startDate, endDate).Scan(&totalRevenue, &totalTransaction)
+	if err != nil {
+		return 0, 0, "", 0, err
+	}
+
+	// 2. Get Best Selling Product
+	queryBestSeller := `
+		SELECT p.name, COALESCE(SUM(td.quantity), 0)
+		FROM transaction_details td
+		JOIN products p ON p.id = td.product_id
+		JOIN transactions t ON t.id = td.transaction_id
+		WHERE t.created_at >= $1 AND t.created_at <= $2
+		GROUP BY p.name
+		ORDER BY SUM(td.quantity) DESC
+		LIMIT 1
+	`
+	err = r.pool.QueryRow(ctx, queryBestSeller, startDate, endDate).Scan(&bestProductName, &bestProductQty)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			// No transactions yet
+			return totalRevenue, totalTransaction, "", 0, nil
+		}
+		return 0, 0, "", 0, err
+	}
+
+	return totalRevenue, totalTransaction, bestProductName, bestProductQty, nil
 }

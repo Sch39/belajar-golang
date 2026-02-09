@@ -26,8 +26,20 @@ type CheckoutOutput struct {
 	CreatedAt  time.Time
 }
 
+type BestSellingProduct struct {
+	Nama       string `json:"nama"`
+	QtyTerjual int64  `json:"qty_terjual"`
+}
+
+type ReportOutput struct {
+	TotalRevenue   int64              `json:"total_revenue"`
+	TotalTransaksi int64              `json:"total_transaksi"`
+	ProdukTerlaris BestSellingProduct `json:"produk_terlaris"`
+}
+
 type Service interface {
 	Checkout(ctx context.Context, input CheckoutInput) (CheckoutOutput, error)
+	GetReport(ctx context.Context, startDate, endDate time.Time) (ReportOutput, error)
 }
 
 type service struct {
@@ -85,5 +97,21 @@ func (s *service) Checkout(ctx context.Context, input CheckoutInput) (CheckoutOu
 		ID:         txID,
 		TotalPrice: totalPrice,
 		CreatedAt:  now,
+	}, nil
+}
+
+func (s *service) GetReport(ctx context.Context, startDate, endDate time.Time) (ReportOutput, error) {
+	totalRevenue, totalTransaction, bestName, bestQty, err := s.repo.GetReport(ctx, startDate, endDate)
+	if err != nil {
+		return ReportOutput{}, mapRepoError(err)
+	}
+
+	return ReportOutput{
+		TotalRevenue:   totalRevenue,
+		TotalTransaksi: totalTransaction,
+		ProdukTerlaris: BestSellingProduct{
+			Nama:       bestName,
+			QtyTerjual: bestQty,
+		},
 	}, nil
 }

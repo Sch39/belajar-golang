@@ -10,7 +10,7 @@ Accept: application/json
     "items": [
         {
             "product_id": "{{PRODUCT_ID}}",
-            "quantity": 50
+            "quantity": 1
         }
     ]
 }
@@ -41,3 +41,11 @@ Accept: application/json
         }
     ]
 }
+
+### Get Report Today
+GET http://localhost:8080/api/report/hari-ini
+Accept: application/json
+
+### Get Report Custom Range
+GET http://localhost:8080/api/report?start_date=2026-01-01&end_date=2026-03-01
+Accept: application/json
