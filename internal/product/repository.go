@@ -12,6 +12,7 @@ type Repository interface {
 	FindAll(ctx context.Context, query string, skip, limit int) ([]domain.Product, error)
 	Count(ctx context.Context, query string) (int, error)
 	FindByID(ctx context.Context, id string) (*domain.Product, error)
+	FindByIDs(ctx context.Context, ids []string) ([]domain.Product, error)
 	Update(ctx context.Context, product *domain.Product) error
 	Delete(ctx context.Context, product *domain.Product) error
 }

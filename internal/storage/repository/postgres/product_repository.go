@@ -127,6 +127,38 @@ func (r *productRepository) FindByID(ctx context.Context, id string) (*domain.Pr
 	return &product, nil
 }
 
+func (r *productRepository) FindByIDs(ctx context.Context, ids []string) ([]domain.Product, error) {
+	q := `
+		SELECT id, name, price, stock, created_at, updated_at, category_id
+		FROM products
+		WHERE id = ANY($1) AND is_active = true
+	`
+	rows, err := r.pool.Query(ctx, q, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var products []domain.Product
+	for rows.Next() {
+		var product domain.Product
+		if err := rows.Scan(
+			&product.ID,
+			&product.Name,
+			&product.Price,
+			&product.Stock,
+			&product.CreatedAt,
+			&product.UpdatedAt,
+			&product.CategoryID,
+		); err != nil {
+			return nil, err
+		}
+		products = append(products, product)
+	}
+
+	return products, rows.Err()
+}
+
 func (r *productRepository) Update(ctx context.Context, product *domain.Product) error {
 	query := `
 		UPDATE products
