@@ -473,9 +473,81 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/report": {
+            "get": {
+                "description": "Get transaction report (revenue, total transactions, best selling product) for a specific date range",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "report"
+                ],
+                "summary": "Get transaction report by date range",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.ReportSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.InvalidBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/report/hari-ini": {
+            "get": {
+                "description": "Get transaction report (revenue, total transactions, best selling product) for today",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "report"
+                ],
+                "summary": "Get transaction report for today",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.ReportSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_transaction.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/transactions/checkout": {
             "post": {
-                "description": "Process a checkout with a list of items",
+                "description": "Create a new transaction (checkout)",
                 "consumes": [
                     "application/json"
                 ],
@@ -489,7 +561,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Checkout Request Body",
-                        "name": "checkout",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -517,9 +589,9 @@ const docTemplate = `{
                         }
                     },
                     "422": {
-                        "description": "Validation error or Insufficient stock",
+                        "description": "Insufficient stock",
                         "schema": {
-                            "$ref": "#/definitions/internal_transaction.ValidationErrorResponse"
+                            "$ref": "#/definitions/internal_transaction.InsufficientStockResponse"
                         }
                     },
                     "500": {
@@ -932,6 +1004,17 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_transaction.BestSellingProduct": {
+            "type": "object",
+            "properties": {
+                "nama": {
+                    "type": "string"
+                },
+                "qty_terjual": {
+                    "type": "integer"
+                }
+            }
+        },
         "internal_transaction.CheckoutSuccessResponse": {
             "type": "object",
             "properties": {
@@ -945,6 +1028,23 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "internal_transaction.InsufficientStockResponse": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "string",
+                    "example": "VALIDATION_ERROR"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "insufficient stock for product ID: ..."
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -996,6 +1096,36 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": false
+                }
+            }
+        },
+        "internal_transaction.ReportOutput": {
+            "type": "object",
+            "properties": {
+                "produk_terlaris": {
+                    "$ref": "#/definitions/internal_transaction.BestSellingProduct"
+                },
+                "total_revenue": {
+                    "type": "integer"
+                },
+                "total_transaksi": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_transaction.ReportSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_transaction.ReportOutput"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },

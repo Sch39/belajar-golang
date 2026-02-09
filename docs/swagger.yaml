@@ -283,6 +283,13 @@ definitions:
     - price
     - stock
     type: object
+  internal_transaction.BestSellingProduct:
+    properties:
+      nama:
+        type: string
+      qty_terjual:
+        type: integer
+    type: object
   internal_transaction.CheckoutSuccessResponse:
     properties:
       data:
@@ -292,6 +299,18 @@ definitions:
         type: string
       success:
         example: true
+        type: boolean
+    type: object
+  internal_transaction.InsufficientStockResponse:
+    properties:
+      error_code:
+        example: VALIDATION_ERROR
+        type: string
+      message:
+        example: 'insufficient stock for product ID: ...'
+        type: string
+      success:
+        example: false
         type: boolean
     type: object
   internal_transaction.InternalServerErrorResponse:
@@ -328,6 +347,26 @@ definitions:
         type: string
       success:
         example: false
+        type: boolean
+    type: object
+  internal_transaction.ReportOutput:
+    properties:
+      produk_terlaris:
+        $ref: '#/definitions/internal_transaction.BestSellingProduct'
+      total_revenue:
+        type: integer
+      total_transaksi:
+        type: integer
+    type: object
+  internal_transaction.ReportSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_transaction.ReportOutput'
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
         type: boolean
     type: object
   internal_transaction.ValidationErrorResponse:
@@ -683,15 +722,64 @@ paths:
       summary: Update an existing product
       tags:
       - products
+  /api/report:
+    get:
+      description: Get transaction report (revenue, total transactions, best selling
+        product) for a specific date range
+      parameters:
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End Date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_transaction.ReportSuccessResponse'
+        "400":
+          description: Invalid date format
+          schema:
+            $ref: '#/definitions/internal_transaction.InvalidBodyResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_transaction.InternalServerErrorResponse'
+      summary: Get transaction report by date range
+      tags:
+      - report
+  /api/report/hari-ini:
+    get:
+      description: Get transaction report (revenue, total transactions, best selling
+        product) for today
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_transaction.ReportSuccessResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/internal_transaction.InternalServerErrorResponse'
+      summary: Get transaction report for today
+      tags:
+      - report
   /api/transactions/checkout:
     post:
       consumes:
       - application/json
-      description: Process a checkout with a list of items
+      description: Create a new transaction (checkout)
       parameters:
       - description: Checkout Request Body
         in: body
-        name: checkout
+        name: request
         required: true
         schema:
           $ref: '#/definitions/internal_transaction.checkoutRequest'
@@ -711,9 +799,9 @@ paths:
           schema:
             $ref: '#/definitions/internal_transaction.ProductNotFoundResponse'
         "422":
-          description: Validation error or Insufficient stock
+          description: Insufficient stock
           schema:
-            $ref: '#/definitions/internal_transaction.ValidationErrorResponse'
+            $ref: '#/definitions/internal_transaction.InsufficientStockResponse'
         "500":
           description: Internal server error
           schema:

@@ -18,6 +18,20 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
+// Checkout godoc
+// @Summary      Create a new transaction
+// @Description  Create a new transaction (checkout)
+// @Tags         transactions
+// @Accept       json
+// @Produce      json
+// @Param        request  body      checkoutRequest  true  "Checkout Request Body"
+// @Success      201      {object}  transaction.CheckoutSuccessResponse
+// @Failure      400      {object}  transaction.InvalidBodyResponse "Invalid JSON body"
+// @Failure      404      {object}  transaction.ProductNotFoundResponse "Product not found"
+// @Failure      422      {object}  transaction.ValidationErrorResponse "Validation error"
+// @Failure      422      {object}  transaction.InsufficientStockResponse "Insufficient stock"
+// @Failure      500      {object}  transaction.InternalServerErrorResponse "Internal server error"
+// @Router       /api/transactions/checkout [post]
 func (h *Handler) Checkout(w http.ResponseWriter, r *http.Request) {
 	var req checkoutRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -56,6 +70,14 @@ func (h *Handler) Checkout(w http.ResponseWriter, r *http.Request) {
 	rest.JSON(w, http.StatusCreated, rest.Success(res))
 }
 
+// GetReportToday godoc
+// @Summary      Get transaction report for today
+// @Description  Get transaction report (revenue, total transactions, best selling product) for today
+// @Tags         report
+// @Produce      json
+// @Success      200      {object}  transaction.ReportSuccessResponse
+// @Failure      500      {object}  transaction.InternalServerErrorResponse "Internal server error"
+// @Router       /api/report/hari-ini [get]
 func (h *Handler) GetReportToday(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	startDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -71,6 +93,17 @@ func (h *Handler) GetReportToday(w http.ResponseWriter, r *http.Request) {
 	rest.JSON(w, http.StatusOK, rest.Success(output))
 }
 
+// GetReport godoc
+// @Summary      Get transaction report by date range
+// @Description  Get transaction report (revenue, total transactions, best selling product) for a specific date range
+// @Tags         report
+// @Produce      json
+// @Param        start_date  query     string  false  "Start Date (YYYY-MM-DD)"
+// @Param        end_date    query     string  false  "End Date (YYYY-MM-DD)"
+// @Success      200         {object}  transaction.ReportSuccessResponse
+// @Failure      400         {object}  transaction.InvalidBodyResponse "Invalid date format"
+// @Failure      500         {object}  transaction.InternalServerErrorResponse "Internal server error"
+// @Router       /api/report [get]
 func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	startDateStr := r.URL.Query().Get("start_date")
 	endDateStr := r.URL.Query().Get("end_date")

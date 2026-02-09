@@ -37,3 +37,9 @@ type InsufficientStockResponse struct {
 	Message   string `json:"message" example:"insufficient stock for product ID: ..."`
 	ErrorCode string `json:"error_code" example:"VALIDATION_ERROR"`
 }
+
+type ReportSuccessResponse struct {
+	Success bool         `json:"success" example:"true"`
+	Message string       `json:"message" example:"Operation completed successfully"`
+	Data    ReportOutput `json:"data"`
+}
